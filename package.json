@@ -6,11 +6,18 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test-db": "node scripts/test-connection.js",
+    "init-db": "node scripts/init-db.js"
   },
   "dependencies": {
     "autoprefixer": "^10.4.21",
+    "dotenv": "^16.5.0",
+    "jsonwebtoken": "^9.0.2",
+    "luxon": "^3.6.1",
     "next": "15.3.2",
+    "nodemailer": "^7.0.3",
+    "pg": "^8.16.0",
     "postcss": "^8.5.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
@@ -18,7 +25,11 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@types/jsonwebtoken": "^9.0.9",
+    "@types/luxon": "^3.6.2",
     "@types/node": "^20",
+    "@types/nodemailer": "^6.4.17",
+    "@types/pg": "^8.15.1",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",

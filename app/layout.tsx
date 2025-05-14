@@ -3,8 +3,8 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Via Proposito - Página en construcción',
-  description: 'Sitio web oficial de Via Proposito, actualmente en construcción',
+  title: 'Via Propósito - Test de evaluación personal',
+  description: 'Descubre tu perfil personal a través de nuestro test de 37 preguntas',
 };
 
 export default function RootLayout({
