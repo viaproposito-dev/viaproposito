@@ -1,7 +1,7 @@
-// app/page.tsx
 "use client";
 import React from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 export default function HomePage() {
   const router = useRouter();
@@ -11,33 +11,38 @@ export default function HomePage() {
   };
 
   return (
-    <div className="bg-gradient-to-b from-gray-50 to-gray-100 min-h-screen flex flex-col">
+    <div className="bg-[#295244] min-h-screen flex flex-col">
       {/* Hero Section - Centrado vertical y horizontalmente */}
-      <main className="flex-1 flex items-center justify-center">
-        <div className="text-center px-4 sm:px-6 max-w-3xl mx-auto">
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
-            Via Propósito
-          </h1>
-          <p className="text-xl md:text-2xl text-gray-600 mb-10">
+      <main className="flex-1 flex items-center justify-center px-4 sm:px-6">
+        <div className="text-center max-w-4xl mx-auto">
+
+          {/* Logo completo */}
+          <div>
+            <Image
+              src="/logos/logo_FFFBEF.png"
+              alt="Vía Propósito"
+              width={700}
+              height={350}
+              className="mx-auto"
+              priority
+            />
+          </div>
+
+          {/* Subtítulo */}
+          <p className="text-[#FFFBEF]/90 text-xl lg:text-2xl mb-14 font-poppins font-normal leading-relaxed mx-auto">
             Descubre tu perfil personal a través de nuestro test de evaluación
           </p>
+
+          {/* Botón CTA */}
           <button
             onClick={navigateToTest}
-            className="px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg text-lg transition-colors duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 animate-pulse"
+            className="px-12 py-6 bg-[#FFFBEF] text-[#295244] font-poppins font-semibold rounded-lg text-2xl md:text-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 hover:bg-[#FFFBEF]/90"
           >
             Realizar el Test
           </button>
+
         </div>
       </main>
-
-      {/* Footer sencillo */}
-      <footer className="py-6">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="text-center">
-            <p className="text-gray-500 text-sm">© {new Date().getFullYear()} Via Propósito. Todos los derechos reservados.</p>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }
