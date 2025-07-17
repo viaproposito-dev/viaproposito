@@ -34,22 +34,6 @@ const InstructionsModal: React.FC<InstructionsModalProps> = ({ onStart }) => {
         }
     };
 
-    const checkEmailExists = async (email: string) => {
-        try {
-            const response = await fetch(`/api/test-results/check-email?email=${encodeURIComponent(email)}`);
-
-            if (!response.ok) {
-                throw new Error('Error al verificar el correo');
-            }
-
-            const data = await response.json();
-            return data.exists;
-        } catch (error) {
-            console.error('Error verificando email:', error);
-            throw error;
-        }
-    };
-
     const handleSubmit = async () => {
         setFormSubmitted(true);
 
@@ -71,22 +55,13 @@ const InstructionsModal: React.FC<InstructionsModalProps> = ({ onStart }) => {
         setError('');
 
         try {
-            // Verificar si el email ya existe en la base de datos
-            const emailExists = await checkEmailExists(email);
-
-            if (emailExists) {
-                setIsValidEmail(false);
-                setError('Este correo ya ha realizado el test anteriormente. Por favor utiliza otro correo electrónico.');
-                setIsLoading(false);
-                return;
-            }
-
-            // Si todo está bien, continuamos con el test
+            // Eliminamos la verificación de email existente
+            // Ahora permitimos que cualquier email tome el test múltiples veces
             onStart(email);
         } catch (err) {
             setIsValidEmail(false);
-            setError('Ocurrió un error al verificar tu correo. Inténtalo de nuevo');
-            console.error('Error en verificación:', err);
+            setError('Ocurrió un error inesperado. Inténtalo de nuevo');
+            console.error('Error:', err);
             setIsLoading(false);
         }
     };
@@ -143,8 +118,8 @@ const InstructionsModal: React.FC<InstructionsModalProps> = ({ onStart }) => {
                         onChange={handleEmailChange}
                         onKeyDown={handleKeyDown}
                         className={`w-full p-3 sm:p-4 border-2 rounded-lg font-poppins text-sm sm:text-base focus:ring-2 focus:outline-none transition-all duration-200 ${isValidEmail
-                                ? 'border-via-sage focus:border-via-primary focus:ring-via-primary/20'
-                                : 'border-red-400 focus:border-red-500 focus:ring-red-200'
+                            ? 'border-via-sage focus:border-via-primary focus:ring-via-primary/20'
+                            : 'border-red-400 focus:border-red-500 focus:ring-red-200'
                             }`}
                         placeholder="ejemplo@correo.com"
                         disabled={isLoading}
@@ -161,12 +136,12 @@ const InstructionsModal: React.FC<InstructionsModalProps> = ({ onStart }) => {
                         </div>
                     )}
 
-                    {/* Nota informativa */}
+                    {/* Nota informativa actualizada */}
                     <p className="mt-2 sm:mt-3 text-xs font-poppins text-via-primary/60 bg-via-cream p-2 sm:p-3 rounded-lg border border-via-sage/20">
                         <svg className="h-3 w-3 sm:h-4 sm:w-4 inline mr-1 text-via-primary/40" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                         </svg>
-                        Tu correo se utilizará únicamente para enviarte los resultados y evitar duplicados. No compartimos tu información.
+                        Tu correo se utilizará únicamente para enviarte los resultados. Puedes repetir el test cuando gustes.
                     </p>
                 </div>
 
@@ -175,8 +150,8 @@ const InstructionsModal: React.FC<InstructionsModalProps> = ({ onStart }) => {
                     onClick={handleSubmit}
                     disabled={isLoading}
                     className={`w-full py-3 sm:py-4 font-poppins font-semibold text-sm sm:text-base rounded-lg transition-all duration-200 transform ${isLoading
-                            ? 'bg-via-sage/50 cursor-not-allowed text-via-primary/50'
-                            : 'bg-via-primary hover:bg-via-secondary text-white hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0'
+                        ? 'bg-via-sage/50 cursor-not-allowed text-via-primary/50'
+                        : 'bg-via-primary hover:bg-via-secondary text-white hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0'
                         }`}
                 >
                     {isLoading ? (
@@ -185,7 +160,7 @@ const InstructionsModal: React.FC<InstructionsModalProps> = ({ onStart }) => {
                                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                             </svg>
-                            Verificando correo...
+                            Iniciando test...
                         </span>
                     ) : (
                         <>

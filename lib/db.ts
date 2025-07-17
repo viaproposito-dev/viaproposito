@@ -12,11 +12,11 @@ const pool = new Pool({
 // Función para ejecutar consultas SQL
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function query(text: string, params?: any[]) {
-    const start = Date.now();
+    // const start = Date.now();
     try {
         const res = await pool.query(text, params);
-        const duration = Date.now() - start;
-        console.log('Consulta ejecutada', { text, duration, rows: res.rowCount });
+        // const duration = Date.now() - start;
+        // console.log('Consulta ejecutada', { text, duration, rows: res.rowCount })
         return res;
     } catch (error) {
         console.error('Error en la consulta', { text, error });

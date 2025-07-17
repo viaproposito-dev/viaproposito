@@ -66,218 +66,326 @@ const createEmailTemplate = (result: CategoryResult) => {
     <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="color-scheme" content="light">
+      <meta name="supported-color-schemes" content="light">
       <title>Tus Resultados del Test - Vía Propósito</title>
       <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
         
+        /* Force light mode styles */
+        * {
+          color-scheme: light !important;
+          forced-color-adjust: none !important;
+        }
+        
+        /* Dark mode overrides - force light mode appearance */
+        @media (prefers-color-scheme: dark) {
+          * {
+            background-color: initial !important;
+            color: initial !important;
+          }
+        }
+        
         body {
-          font-family: 'Poppins', Arial, sans-serif;
-          line-height: 1.6;
-          color: #295244;
-          margin: 0;
-          padding: 0;
-          background-color: #FFFBEF;
+          font-family: 'Poppins', Arial, sans-serif !important;
+          line-height: 1.6 !important;
+          color: #295244 !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          background-color: #FFFBEF !important;
+          -webkit-text-size-adjust: 100% !important;
+          -ms-text-size-adjust: 100% !important;
         }
+        
+        /* Ensure all text remains dark */
+        body, div, p, h1, h2, h3, h4, h5, h6, span, a, td, th {
+          color: #295244 !important;
+        }
+        
         .container {
-          max-width: 600px;
-          margin: 0 auto;
-          padding: 20px;
+          max-width: 600px !important;
+          margin: 0 auto !important;
+          padding: 20px !important;
+          background-color: #FFFBEF !important;
         }
+        
         .header {
-          background: linear-gradient(135deg, ${categoryData.color} 0%, #295244 100%);
-          color: white;
-          padding: 40px 30px;
-          text-align: center;
-          border-radius: 16px 16px 0 0;
-          position: relative;
-          overflow: hidden;
+          background: linear-gradient(135deg, ${categoryData.color} 0%, #295244 100%) !important;
+          color: white !important;
+          padding: 40px 30px !important;
+          text-align: center !important;
+          border-radius: 16px 16px 0 0 !important;
+          position: relative !important;
+          overflow: hidden !important;
         }
+        
+        .header * {
+          color: white !important;
+        }
+        
         .header::before {
-          content: '';
-          position: absolute;
-          top: -50%;
-          left: -50%;
-          width: 200%;
-          height: 200%;
-          background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.1"/><circle cx="10" cy="60" r="0.5" fill="white" opacity="0.1"/><circle cx="90" cy="40" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>') repeat;
-          z-index: 1;
+          content: '' !important;
+          position: absolute !important;
+          top: -50% !important;
+          left: -50% !important;
+          width: 200% !important;
+          height: 200% !important;
+          background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.1"/><circle cx="10" cy="60" r="0.5" fill="white" opacity="0.1"/><circle cx="90" cy="40" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>') repeat !important;
+          z-index: 1 !important;
         }
+        
         .header-content {
-          position: relative;
-          z-index: 2;
+          position: relative !important;
+          z-index: 2 !important;
         }
+        
         .logo {
-          font-size: 32px;
-          font-weight: 700;
-          margin-bottom: 10px;
-          font-style: italic;
+          font-size: 32px !important;
+          font-weight: 700 !important;
+          margin-bottom: 10px !important;
+          font-style: italic !important;
+          color: white !important;
         }
+        
         .logo-sub {
-          font-size: 20px;
-          font-weight: 500;
-          opacity: 0.9;
+          font-size: 20px !important;
+          font-weight: 500 !important;
+          opacity: 0.9 !important;
+          color: white !important;
         }
+        
         .result-badge {
-          background: rgba(255, 255, 255, 0.2);
-          backdrop-filter: blur(10px);
-          padding: 20px;
-          border-radius: 12px;
-          margin-top: 20px;
-          border: 1px solid rgba(255, 255, 255, 0.1);
+          background: rgba(255, 255, 255, 0.2) !important;
+          backdrop-filter: blur(10px) !important;
+          padding: 20px !important;
+          border-radius: 12px !important;
+          margin-top: 20px !important;
+          border: 1px solid rgba(255, 255, 255, 0.1) !important;
         }
+        
         .result-text {
-          font-size: 16px;
-          font-weight: 500;
-          margin-bottom: 8px;
-          opacity: 0.9;
+          font-size: 16px !important;
+          font-weight: 500 !important;
+          margin-bottom: 8px !important;
+          opacity: 0.9 !important;
+          color: white !important;
         }
+        
         .result-title {
-          font-size: 28px;
-          font-weight: 700;
-          margin: 0;
+          font-size: 28px !important;
+          font-weight: 700 !important;
+          margin: 0 !important;
+          color: white !important;
         }
+        
         .content {
-          background-color: white;
-          padding: 40px 30px;
-          border-radius: 0 0 16px 16px;
-          box-shadow: 0 10px 30px rgba(41, 82, 68, 0.1);
+          background-color: white !important;
+          padding: 40px 30px !important;
+          border-radius: 0 0 16px 16px !important;
+          box-shadow: 0 10px 30px rgba(41, 82, 68, 0.1) !important;
         }
+        
         .section {
-          margin-bottom: 30px;
+          margin-bottom: 30px !important;
+          background-color: white !important;
         }
+        
         .section h2 {
-          color: #295244;
-          font-size: 22px;
-          font-weight: 600;
-          margin-top: 0;
-          margin-bottom: 15px;
-          border-bottom: 2px solid #FFFBEF;
-          padding-bottom: 10px;
+          color: #295244 !important;
+          font-size: 22px !important;
+          font-weight: 600 !important;
+          margin-top: 0 !important;
+          margin-bottom: 15px !important;
+          border-bottom: 2px solid #FFFBEF !important;
+          padding-bottom: 10px !important;
         }
+        
         .section p {
-          font-size: 16px;
-          line-height: 1.7;
-          margin-bottom: 15px;
+          font-size: 16px !important;
+          line-height: 1.7 !important;
+          margin-bottom: 15px !important;
+          color: #295244 !important;
         }
+        
         .advice-box {
-          background: linear-gradient(135deg, #FFFBEF 0%, #F8F5E9 100%);
-          border-left: 4px solid ${categoryData.color};
-          padding: 25px;
-          border-radius: 12px;
-          margin-top: 25px;
-          position: relative;
+          background: linear-gradient(135deg, #FFFBEF 0%, #F8F5E9 100%) !important;
+          border-left: 4px solid ${categoryData.color} !important;
+          padding: 25px !important;
+          border-radius: 12px !important;
+          margin-top: 25px !important;
+          position: relative !important;
         }
+        
         .advice-box::before {
-          content: '💡';
-          position: absolute;
-          top: 15px;
-          right: 20px;
-          font-size: 24px;
-          opacity: 0.6;
+          content: '💡' !important;
+          position: absolute !important;
+          top: 15px !important;
+          right: 20px !important;
+          font-size: 24px !important;
+          opacity: 0.6 !important;
         }
+        
         .advice-box h3 {
-          margin-top: 0;
-          margin-bottom: 15px;
-          color: #295244;
-          font-size: 18px;
-          font-weight: 600;
+          margin-top: 0 !important;
+          margin-bottom: 15px !important;
+          color: #295244 !important;
+          font-size: 18px !important;
+          font-weight: 600 !important;
         }
+        
         .advice-box p {
-          margin-bottom: 0;
-          font-weight: 500;
+          margin-bottom: 0 !important;
+          font-weight: 500 !important;
+          color: #295244 !important;
         }
+        
         .footer {
-          text-align: center;
-          margin-top: 40px;
-          padding: 30px;
-          background: #295244;
-          border-radius: 16px;
-          color: white;
+          text-align: center !important;
+          margin-top: 40px !important;
+          padding: 30px !important;
+          background: #295244 !important;
+          border-radius: 16px !important;
+          color: white !important;
         }
+        
+        .footer * {
+          color: white !important;
+        }
+        
         .footer p {
-          margin: 8px 0;
-          font-size: 14px;
-          opacity: 0.8;
+          margin: 8px 0 !important;
+          font-size: 14px !important;
+          opacity: 0.8 !important;
+          color: white !important;
         }
+        
         .footer .copyright {
-          font-weight: 600;
-          opacity: 1;
+          font-weight: 600 !important;
+          opacity: 1 !important;
+          color: white !important;
         }
+        
         .button {
-          display: inline-block;
-          background: linear-gradient(135deg, ${categoryData.color} 0%, #295244 100%);
-          color: white;
-          padding: 15px 30px;
-          text-decoration: none;
-          border-radius: 10px;
-          font-weight: 600;
-          font-size: 16px;
-          margin-top: 25px;
-          transition: transform 0.2s ease;
-          box-shadow: 0 4px 15px rgba(41, 82, 68, 0.3);
+          display: inline-block !important;
+          background: linear-gradient(135deg, ${categoryData.color} 0%, #295244 100%) !important;
+          color: white !important;
+          padding: 15px 30px !important;
+          text-decoration: none !important;
+          border-radius: 10px !important;
+          font-weight: 600 !important;
+          font-size: 16px !important;
+          margin-top: 25px !important;
+          transition: transform 0.2s ease !important;
+          box-shadow: 0 4px 15px rgba(41, 82, 68, 0.3) !important;
         }
+        
         .button:hover {
-          transform: translateY(-2px);
+          transform: translateY(-2px) !important;
         }
+        
         .divider {
-          height: 1px;
-          background: linear-gradient(90deg, transparent 0%, #A3B7AD 50%, transparent 100%);
-          margin: 30px 0;
+          height: 1px !important;
+          background: linear-gradient(90deg, transparent 0%, #A3B7AD 50%, transparent 100%) !important;
+          margin: 30px 0 !important;
         }
+        
         .highlight {
-          background: linear-gradient(120deg, ${categoryData.color}20 0%, transparent 100%);
-          padding: 20px;
-          border-radius: 10px;
-          border: 1px solid ${categoryData.color}30;
-          margin: 20px 0;
+          background: linear-gradient(120deg, ${categoryData.color}20 0%, transparent 100%) !important;
+          padding: 20px !important;
+          border-radius: 10px !important;
+          border: 1px solid ${categoryData.color}30 !important;
+          margin: 20px 0 !important;
+        }
+        
+        .highlight p {
+          color: #295244 !important;
+        }
+        
+        .highlight strong {
+          color: #295244 !important;
+        }
+        
+        /* Mobile dark mode specific overrides */
+        @media (prefers-color-scheme: dark) {
+          .container, .content, .section, .advice-box, body {
+            background-color: #FFFBEF !important;
+          }
+          
+          .header {
+            background: linear-gradient(135deg, ${categoryData.color} 0%, #295244 100%) !important;
+          }
+          
+          .footer {
+            background: #295244 !important;
+          }
+        }
+        
+        /* Additional email client specific fixes */
+        [data-ogsc] .container,
+        [data-ogsc] .content,
+        [data-ogsc] .section,
+        [data-ogsc] .advice-box {
+          background-color: #FFFBEF !important;
+        }
+        
+        [data-ogsc] body {
+          background-color: #FFFBEF !important;
+        }
+        
+        [data-ogsc] .header {
+          background: linear-gradient(135deg, ${categoryData.color} 0%, #295244 100%) !important;
+        }
+        
+        [data-ogsc] .footer {
+          background: #295244 !important;
         }
       </style>
     </head>
-    <body>
-      <div class="container">
-        <div class="header">
+    <body style="background-color: #FFFBEF !important; color: #295244 !important;">
+      <div class="container" style="background-color: #FFFBEF !important;">
+        <div class="header" style="background: linear-gradient(135deg, ${categoryData.color} 0%, #295244 100%) !important;">
           <div class="header-content">
-            <div class="logo">vía propósito</div>
-            <div class="logo-sub">Test de evaluación personal</div>
+            <div class="logo" style="color: white !important;">vía propósito</div>
+            <div class="logo-sub" style="color: white !important;">Test de evaluación personal</div>
             <div class="result-badge">
-              <div class="result-text">Tu Perfil es:</div>
-              <div class="result-title">${categoryData.title}</div>
+              <div class="result-text" style="color: white !important;">Tu Perfil es:</div>
+              <div class="result-title" style="color: white !important;">${categoryData.title}</div>
             </div>
           </div>
         </div>
         
-        <div class="content">
-          <div class="section">
-            <h2>Tu Resultado Personal</h2>
-            <p>${categoryData.description} Es posible que te sientas más cómodo con este enfoque, pero también hay oportunidades para el crecimiento personal explorando otros estilos.</p>
+        <div class="content" style="background-color: white !important;">
+          <div class="section" style="background-color: white !important;">
+            <h2 style="color: #295244 !important;">Tu Resultado Personal</h2>
+            <p style="color: #295244 !important;">${categoryData.description} Es posible que te sientas más cómodo con este enfoque, pero también hay oportunidades para el crecimiento personal explorando otros estilos.</p>
           </div>
           
-          <div class="advice-box">
-            <h3>Consejo personalizado:</h3>
-            <p>${categoryData.advice}</p>
+          <div class="advice-box" style="background: linear-gradient(135deg, #FFFBEF 0%, #F8F5E9 100%) !important;">
+            <h3 style="color: #295244 !important;">Consejo personalizado:</h3>
+            <p style="color: #295244 !important;">${categoryData.advice}</p>
           </div>
           
           <div class="divider"></div>
           
-          <div class="section">
-            <h2>¿Qué significa esto?</h2>
+          <div class="section" style="background-color: white !important;">
+            <h2 style="color: #295244 !important;">¿Qué significa esto?</h2>
             <div class="highlight">
-              <p><strong>Este resultado refleja tus tendencias actuales</strong> en cómo te relacionas con diferentes aspectos de tu vida. Recuerda que no hay perfiles "buenos" o "malos" - cada uno tiene sus propias fortalezas y áreas de crecimiento.</p>
+              <p style="color: #295244 !important;"><strong style="color: #295244 !important;">Este resultado refleja tus tendencias actuales</strong> en cómo te relacionas con diferentes aspectos de tu vida. Recuerda que no hay perfiles "buenos" o "malos" - cada uno tiene sus propias fortalezas y áreas de crecimiento.</p>
             </div>
-            <p>Puedes usar esta información para reflexionar sobre cómo te acercas a tus relaciones, trabajo, y objetivos personales. Considera este resultado como un punto de partida para tu desarrollo personal.</p>
+            <p style="color: #295244 !important;">Puedes usar esta información para reflexionar sobre cómo te acercas a tus relaciones, trabajo, y objetivos personales. Considera este resultado como un punto de partida para tu desarrollo personal.</p>
           </div>
           
           <div style="text-align: center;">
-            <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://viaproposito.com'}" style="color: white; text-decoration: none;">
-              <div class="button">Visitar Vía Propósito</div>
+            <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://viaproposito.com'}" style="color: white !important; text-decoration: none;">
+              <div class="button" style="background: linear-gradient(135deg, ${categoryData.color} 0%, #295244 100%) !important; color: white !important;">Visitar Vía Propósito</div>
             </a>
           </div>
         </div>
         
-        <div class="footer">
-          <p class="copyright">&copy; ${currentYear} Vía Propósito. Todos los derechos reservados.</p>
-          <p>Este correo fue enviado porque completaste nuestro test de evaluación personal.</p>
-          <p>Si no realizaste este test, por favor ignora este correo.</p>
+        <div class="footer" style="background: #295244 !important;">
+          <p class="copyright" style="color: white !important;">&copy; ${currentYear} Vía Propósito. Todos los derechos reservados.</p>
+          <p style="color: white !important;">Este correo fue enviado porque completaste nuestro test de evaluación personal.</p>
+          <p style="color: white !important;">Si no realizaste este test, por favor ignora este correo.</p>
         </div>
       </div>
     </body>
@@ -302,9 +410,9 @@ export async function sendResultEmail(email: string, result: CategoryResult) {
       html: htmlContent,
     };
 
-    console.log('Intentando enviar email a:', email);
+    // console.log('Intentando enviar email a:', email);
     const info = await transporter.sendMail(mailOptions);
-    console.log('Email enviado:', info.messageId);
+    // console.log('Email enviado:', info.messageId);
     return { success: true, messageId: info.messageId };
   } catch (error) {
     console.error('Error al enviar el correo:', error);

@@ -76,7 +76,7 @@ export default function AdminDashboard() {
             }
 
             const data = await response.json();
-            console.log('Estadísticas cargadas:', data);
+            // console.log('Estadísticas cargadas:', data);
             setStats(data);
         } catch (err) {
             console.error(err);
