@@ -55,6 +55,11 @@ const QuestionForm = forwardRef<HTMLFormElement, QuestionFormProps>(({
     const handleAnswerAndNext = (questionId: number, value: number) => {
         handleAnswerChange(questionId, value);
 
+        // Force blur any active element to clear touch hover states
+        if (document.activeElement instanceof HTMLElement) {
+            document.activeElement.blur();
+        }
+
         // Si no es la última pregunta, avanzar automáticamente después de un breve delay
         if (!isLastQuestion) {
             setTimeout(() => {
@@ -128,15 +133,18 @@ const QuestionForm = forwardRef<HTMLFormElement, QuestionFormProps>(({
                                             className={`
                                                 block w-full p-3 sm:p-4 border-2 rounded-lg cursor-pointer 
                                                 transition-all duration-200 font-poppins text-left text-sm sm:text-base
-                                                transform hover:scale-[1.02] hover:shadow-md
+                                                transform active:scale-[0.98] focus:outline-none
                                                 ${unansweredQuestions.includes(currentQuestion.id)
-                                                    ? 'border-via-orange/30 hover:border-via-orange/60'
-                                                    : 'border-via-sage/30 hover:border-via-primary/60'}
+                                                    ? 'border-via-orange/30 hover:border-via-orange/60 active:border-via-orange/80'
+                                                    : 'border-via-sage/30 hover:border-via-primary/60 active:border-via-primary/80'}
                                                 ${isSelected
                                                     ? unansweredQuestions.includes(currentQuestion.id)
                                                         ? 'border-via-orange bg-via-orange/10 text-via-orange font-semibold shadow-lg scale-[1.02]'
                                                         : 'border-via-primary bg-via-primary/10 text-via-primary font-semibold shadow-lg scale-[1.02]'
-                                                    : 'text-via-primary/80 bg-white hover:bg-via-cream/50'}
+                                                    : 'text-via-primary/80 bg-white hover:bg-via-cream/50 active:bg-via-cream/70'}
+                                                @media (hover: hover) {
+                                                    ${!isSelected ? 'hover:scale-[1.02] hover:shadow-md' : ''}
+                                                }
                                             `}
                                         >
                                             <div className="flex items-center justify-between">
