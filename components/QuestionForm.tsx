@@ -50,10 +50,6 @@ const QuestionForm = forwardRef<HTMLFormElement, QuestionFormProps>(({
 
     const handleAnswerChange = (questionId: number, value: number) => {
         onAnswerChange(questionId, value);
-    };
-
-    const handleAnswerAndNext = (questionId: number, value: number) => {
-        handleAnswerChange(questionId, value);
 
         // Force blur any active element to clear touch hover states
         if (document.activeElement instanceof HTMLElement) {
@@ -68,18 +64,6 @@ const QuestionForm = forwardRef<HTMLFormElement, QuestionFormProps>(({
             label.style.transform = 'scale(1)';
             label.style.boxShadow = 'none';
         });
-
-        // Si no es la última pregunta, avanzar automáticamente después de un breve delay
-        if (!isLastQuestion) {
-            setTimeout(() => {
-                setCurrentQuestionIndex(prev => prev + 1);
-                // Additional cleanup after navigation
-                setTimeout(() => {
-                    const newLabels = document.querySelectorAll('label');
-                    newLabels.forEach(label => label.blur());
-                }, 100);
-            }, 300);
-        }
     };
 
     return (
@@ -107,7 +91,7 @@ const QuestionForm = forwardRef<HTMLFormElement, QuestionFormProps>(({
             </div>
 
             {/* Pregunta actual - centrada */}
-            <div className="flex-1 flex flex-col justify-center max-w-2xl mx-auto w-full px-4 sm:px-0">
+            <div className="flex-1 flex flex-col max-w-2xl mx-auto w-full px-4 sm:px-0">
                 <div className={`rounded-xl shadow-lg border-2 transition-all duration-300 ${unansweredQuestions.includes(currentQuestion.id)
                     ? 'bg-via-orange/5 border-via-orange shadow-via-orange/20'
                     : answers[currentQuestion.id]
@@ -139,7 +123,7 @@ const QuestionForm = forwardRef<HTMLFormElement, QuestionFormProps>(({
                                             name={`question-${currentQuestion.id}`}
                                             value={option.value}
                                             checked={isSelected}
-                                            onChange={() => handleAnswerAndNext(currentQuestion.id, option.value)}
+                                            onChange={() => handleAnswerChange(currentQuestion.id, option.value)}
                                             className="sr-only"
                                         />
                                         <label

@@ -117,13 +117,14 @@ const InstructionsModal: React.FC<InstructionsModalProps> = ({ onStart }) => {
                         value={email}
                         onChange={handleEmailChange}
                         onKeyDown={handleKeyDown}
-                        className={`w-full p-3 sm:p-4 border-2 rounded-lg font-poppins text-sm sm:text-base focus:ring-2 focus:outline-none transition-all duration-200 ${isValidEmail
+                        className={`w-full p-3 sm:p-4 border-2 rounded-lg font-poppins text-base focus:ring-2 focus:outline-none transition-all duration-200 ${isValidEmail
                             ? 'border-via-sage focus:border-via-primary focus:ring-via-primary/20'
                             : 'border-red-400 focus:border-red-500 focus:ring-red-200'
                             }`}
                         placeholder="ejemplo@correo.com"
                         disabled={isLoading}
                         autoFocus
+                        style={{ fontSize: '16px' }}
                     />
 
                     {/* Mensaje de error */}
