@@ -1,36 +1,25 @@
+// app/admin/page.tsx
 "use client";
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { DateTime } from "luxon";
+import StatsOverview from '@/components/StatsOverview';
+import UsersSection from '@/components/UsersSection';
+import IndividualResultSection from '@/components/IndividualResultSection';
 
-interface CategoryDistribution {
-    category: string;
-    count: number;
-}
-
-interface TestByDay {
-    date: string;
-    count: number;
-}
-
-interface RecentTest {
-    id: number;
-    email: string;
-    test_date: string;
-    final_result: string;
-}
-
-interface StatsData {
+interface BasicStats {
     totalTests: number;
-    categoryDistribution: CategoryDistribution[];
-    testsByDay: TestByDay[];
-    recentTests: RecentTest[];
+    totalUsers: number;
+    categoryDistribution: Array<{
+        category: string;
+        count: number;
+    }>;
 }
 
 export default function AdminDashboard() {
     const [isLoading, setIsLoading] = useState(true);
-    const [stats, setStats] = useState<StatsData | null>(null);
+    const [activeTab, setActiveTab] = useState<'stats' | 'users' | 'individual'>('stats');
+    const [basicStats, setBasicStats] = useState<BasicStats | null>(null);
     const [error, setError] = useState('');
     const router = useRouter();
 
@@ -50,14 +39,14 @@ export default function AdminDashboard() {
             return;
         }
 
-        // Cargar estadísticas
-        fetchStats(sessionToken);
+        // Cargar estadísticas básicas
+        fetchBasicStats(sessionToken);
     }, [router]);
 
-    const fetchStats = async (token: string) => {
+    const fetchBasicStats = async (token: string) => {
         setIsLoading(true);
         try {
-            const response = await fetch('/api/admin/stats', {
+            const response = await fetch('/api/admin/basic-stats', {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -76,8 +65,7 @@ export default function AdminDashboard() {
             }
 
             const data = await response.json();
-            // console.log('Estadísticas cargadas:', data);
-            setStats(data);
+            setBasicStats(data);
         } catch (err) {
             console.error(err);
             setError('Error al cargar estadísticas. Por favor, intenta de nuevo.');
@@ -93,49 +81,8 @@ export default function AdminDashboard() {
         router.push('/admin/login');
     };
 
-    const refreshStats = () => {
-        const sessionToken = sessionStorage.getItem('adminSessionToken');
-        if (sessionToken) {
-            fetchStats(sessionToken);
-        }
-    };
-
-    const getCategoryName = (category: string): string => {
-        const categoryMap: Record<string, string> = {
-            'desenganchados': 'Desenganchados',
-            'soñadores': 'Soñadores',
-            'aficionados': 'Aficionados',
-            'comprometidos': 'Comprometidos'
-        };
-
-        return categoryMap[category] || category;
-    };
-
-    const getCategoryColor = (category: string): string => {
-        const colorMap: Record<string, string> = {
-            'desenganchados': 'bg-[#A3B7AD]',
-            'soñadores': 'bg-[#96AC61]',
-            'aficionados': 'bg-[#586E26]',
-            'comprometidos': 'bg-[#295244]'
-        };
-
-        return colorMap[category] || 'bg-via-sage';
-    };
-
-    const formatDate = (dateString: string): string => {
-        const monterreyDate = DateTime.fromISO(dateString, { zone: "utc" })
-            .setZone("America/Monterrey")
-            .setLocale("es-MX");
-
-        return monterreyDate.toLocaleString({
-            weekday: "long",     // martes
-            day: "numeric",      // 13
-            month: "long",       // mayo
-            year: "numeric",     // 2025
-            hour: "numeric",     // 6
-            minute: "2-digit",   // 45
-            hour12: true         // 6:45 p. m.
-        });
+    const getSessionToken = (): string | null => {
+        return sessionStorage.getItem('adminSessionToken');
     };
 
     if (isLoading) {
@@ -147,8 +94,8 @@ export default function AdminDashboard() {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                         </svg>
                     </div>
-                    <div className="text-via-primary text-xl font-poppins font-semibold mb-2">Cargando estadísticas...</div>
-                    <p className="text-via-primary/60 font-poppins text-sm">Obteniendo datos del dashboard</p>
+                    <div className="text-via-primary text-xl font-poppins font-semibold mb-2">Cargando dashboard...</div>
+                    <p className="text-via-primary/60 font-poppins text-sm">Obteniendo datos del panel</p>
                 </div>
             </div>
         );
@@ -165,7 +112,10 @@ export default function AdminDashboard() {
                     </div>
                     <div className="text-via-orange text-xl font-poppins font-semibold mb-4">{error}</div>
                     <button
-                        onClick={refreshStats}
+                        onClick={() => {
+                            const token = getSessionToken();
+                            if (token) fetchBasicStats(token);
+                        }}
                         className="w-full px-4 py-3 bg-via-primary text-white rounded-lg hover:bg-via-secondary transition duration-300 font-poppins font-medium focus:outline-none focus:ring-2 focus:ring-via-primary focus:ring-opacity-50 shadow-md"
                     >
                         Intentar de nuevo
@@ -176,7 +126,7 @@ export default function AdminDashboard() {
     }
 
     // Si no hay datos, mostrar un mensaje
-    if (!stats || stats.totalTests === 0) {
+    if (!basicStats || basicStats.totalTests === 0) {
         return (
             <div className="min-h-screen bg-via-cream py-12 px-4">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
@@ -235,20 +185,11 @@ export default function AdminDashboard() {
                     <h1 className="text-2xl sm:text-3xl font-poppins font-bold text-via-primary">Panel Administrativo</h1>
                 </div>
 
-                {/* Botones de acción */}
-                <div className="flex flex-col sm:flex-row justify-end gap-3 mb-8">
-                    <button
-                        onClick={refreshStats}
-                        className="px-4 py-2 bg-via-primary text-white rounded-lg hover:bg-via-secondary transition duration-300 shadow-md flex items-center justify-center gap-2 font-poppins font-medium"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                        </svg>
-                        Actualizar datos
-                    </button>
+                {/* Logout button */}
+                <div className="flex justify-end mb-8">
                     <button
                         onClick={logout}
-                        className="px-4 py-2 bg-via-sage/20 text-via-primary rounded-lg hover:bg-via-sage/30 transition duration-300 shadow-sm flex items-center justify-center gap-2 font-poppins"
+                        className="px-4 py-2 bg-via-sage/20 text-via-primary rounded-lg hover:bg-via-sage/30 transition duration-300 shadow-sm flex items-center gap-2 font-poppins"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -257,120 +198,130 @@ export default function AdminDashboard() {
                     </button>
                 </div>
 
-                {/* Card de estadística principal */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-                    <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-via-primary hover:shadow-xl transition duration-300">
-                        <div className="flex justify-between items-start">
-                            <div>
-                                <h2 className="text-sm font-poppins font-medium text-via-primary/70 uppercase tracking-wider mb-1">Tests Completados</h2>
-                                <p className="text-4xl font-poppins font-bold text-via-primary">{stats.totalTests}</p>
-                            </div>
-                            <div className="bg-via-primary/10 p-3 rounded-xl">
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-via-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                                </svg>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Cards decorativas */}
-                    <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-via-sage hover:shadow-xl transition duration-300">
-                        <div className="flex justify-center items-center h-full">
-                            <div className="text-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-via-sage mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                                </svg>
-                                <p className="text-sm font-poppins text-via-primary/60">Estadísticas</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-via-light hover:shadow-xl transition duration-300">
-                        <div className="flex justify-center items-center h-full">
-                            <div className="text-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-via-light mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                                </svg>
-                                <p className="text-sm font-poppins text-via-primary/60">Usuarios</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Distribución por categoría */}
-                <div className="bg-white rounded-xl shadow-lg p-6 mb-8 border border-via-sage/20">
-                    <h2 className="text-xl font-poppins font-semibold text-via-primary mb-6 flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-3 text-via-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
-                        </svg>
-                        Distribución por Categoría
-                    </h2>
-                    <div className="space-y-6">
-                        {['comprometidos', 'aficionados', 'soñadores', 'desenganchados'].map((categoryKey) => {
-                            const categoryData = stats.categoryDistribution.find(c => c.category === categoryKey) || { category: categoryKey, count: 0 };
-                            const percentage = stats.totalTests > 0 ? (categoryData.count / stats.totalTests) * 100 : 0;
-                            const categoryColor = getCategoryColor(categoryKey);
-
-                            return (
-                                <div key={categoryKey} className="bg-via-cream/30 p-4 rounded-lg border border-via-sage/10">
-                                    <div className="flex flex-wrap justify-between mb-3">
-                                        <span className="font-poppins font-medium text-via-primary flex items-center">
-                                            <span className={`inline-block w-4 h-4 rounded-full mr-3 ${categoryColor}`}></span>
-                                            {getCategoryName(categoryKey)}
-                                        </span>
-                                        <span className="font-poppins font-semibold text-via-primary">
-                                            {categoryData.count} tests ({percentage.toFixed(1)}%)
-                                        </span>
+                {/* Tab Navigation Cards */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
+                    {/* Tests Completados Tab */}
+                    <button
+                        onClick={() => setActiveTab('stats')}
+                        className={`group relative rounded-lg shadow-md transition-all duration-200 transform hover:scale-102 focus:outline-none focus:ring-2 focus:ring-via-primary/50 ${activeTab === 'stats'
+                                ? 'bg-via-primary text-white shadow-lg scale-102'
+                                : 'bg-white text-via-primary hover:shadow-lg hover:bg-via-primary/5 border border-via-sage/20'
+                            }`}
+                    >
+                        <div className="p-4 text-left">
+                            <div className="flex justify-between items-center">
+                                <div className="flex-1">
+                                    <div className={`text-xs font-poppins font-medium uppercase tracking-wide mb-1 ${activeTab === 'stats' ? 'text-white/80' : 'text-via-primary/60'
+                                        }`}>
+                                        Tests Completados
                                     </div>
-                                    <div className="w-full bg-via-sage/20 rounded-full h-3">
-                                        <div
-                                            className={`h-3 rounded-full ${categoryColor} transition-all duration-500 ease-out`}
-                                            style={{ width: `${percentage}%` }}
-                                        ></div>
-                                    </div>
+                                    <p className="text-2xl font-poppins font-bold mb-1">{basicStats.totalTests}</p>
+                                    <p className={`text-sm font-poppins ${activeTab === 'stats' ? 'text-white/70' : 'text-via-primary/50'
+                                        }`}>
+                                        Estadísticas generales
+                                    </p>
                                 </div>
-                            );
-                        })}
-                    </div>
+                                <div className={`p-2 rounded-lg transition-all duration-200 ${activeTab === 'stats'
+                                        ? 'bg-white/20 text-white'
+                                        : 'bg-via-primary/10 text-via-primary group-hover:bg-via-primary/20'
+                                    }`}>
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                    </button>
+
+                    {/* Usuarios Tab */}
+                    <button
+                        onClick={() => setActiveTab('users')}
+                        className={`group relative rounded-lg shadow-md transition-all duration-200 transform hover:scale-102 focus:outline-none focus:ring-2 focus:ring-via-sage/50 ${activeTab === 'users'
+                                ? 'bg-via-sage text-white shadow-lg scale-102'
+                                : 'bg-white text-via-primary hover:shadow-lg hover:bg-via-sage/5 border border-via-sage/20'
+                            }`}
+                    >
+                        <div className="p-4 text-left">
+                            <div className="flex justify-between items-center">
+                                <div className="flex-1">
+                                    <div className={`text-xs font-poppins font-medium uppercase tracking-wide mb-1 ${activeTab === 'users' ? 'text-white/80' : 'text-via-primary/60'
+                                        }`}>
+                                        Usuarios Únicos
+                                    </div>
+                                    <p className="text-2xl font-poppins font-bold mb-1">{basicStats.totalUsers}</p>
+                                    <p className={`text-sm font-poppins ${activeTab === 'users' ? 'text-white/70' : 'text-via-primary/50'
+                                        }`}>
+                                        Gestionar usuarios
+                                    </p>
+                                </div>
+                                <div className={`p-2 rounded-lg transition-all duration-200 ${activeTab === 'users'
+                                        ? 'bg-white/20 text-white'
+                                        : 'bg-via-sage/10 text-via-sage group-hover:bg-via-sage/20'
+                                    }`}>
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                    </button>
+
+                    {/* Resultado Individual Tab */}
+                    <button
+                        onClick={() => setActiveTab('individual')}
+                        className={`group relative rounded-lg shadow-md transition-all duration-200 transform hover:scale-102 focus:outline-none focus:ring-2 focus:ring-via-light/50 ${activeTab === 'individual'
+                                ? 'bg-via-light text-white shadow-lg scale-102'
+                                : 'bg-white text-via-primary hover:shadow-lg hover:bg-via-light/5 border border-via-sage/20'
+                            }`}
+                    >
+                        <div className="p-4 text-left">
+                            <div className="flex justify-between items-center">
+                                <div className="flex-1">
+                                    <div className={`text-xs font-poppins font-medium uppercase tracking-wide mb-1 ${activeTab === 'individual' ? 'text-white/80' : 'text-via-primary/60'
+                                        }`}>
+                                        Resultado Individual
+                                    </div>
+                                    <p className="text-lg font-poppins font-bold mb-1">Buscar Usuario</p>
+                                    <p className={`text-sm font-poppins ${activeTab === 'individual' ? 'text-white/70' : 'text-via-primary/50'
+                                        }`}>
+                                        Historial por usuario
+                                    </p>
+                                </div>
+                                <div className={`p-2 rounded-lg transition-all duration-200 ${activeTab === 'individual'
+                                        ? 'bg-white/20 text-white'
+                                        : 'bg-via-light/10 text-via-light group-hover:bg-via-light/20'
+                                    }`}>
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                    </button>
                 </div>
 
-                {/* Tabla de tests recientes */}
-                <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-via-sage/20">
-                    <div className="px-6 py-4 border-b border-via-sage/10 bg-via-cream/20">
-                        <h2 className="text-xl font-poppins font-semibold text-via-primary flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-3 text-via-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            Tests Recientes
-                        </h2>
-                    </div>
-                    <div className="overflow-x-auto">
-                        <table className="min-w-full divide-y divide-via-sage/10">
-                            <thead className="bg-via-sage/5">
-                                <tr>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-poppins font-semibold text-via-primary uppercase tracking-wider">ID</th>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-poppins font-semibold text-via-primary uppercase tracking-wider">Email</th>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-poppins font-semibold text-via-primary uppercase tracking-wider">Fecha</th>
-                                    <th scope="col" className="px-6 py-3 text-left text-xs font-poppins font-semibold text-via-primary uppercase tracking-wider">Resultado</th>
-                                </tr>
-                            </thead>
-                            <tbody className="bg-white divide-y divide-via-sage/10">
-                                {stats.recentTests.map((test) => (
-                                    <tr key={test.id} className="hover:bg-via-cream/30 transition-colors duration-150">
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-poppins text-via-primary/70">#{test.id}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-poppins font-medium text-via-primary">{test.email}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-poppins text-via-primary/70">{formatDate(test.test_date)}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <span className={`px-3 py-1.5 inline-flex text-xs font-poppins font-semibold rounded-full ${getCategoryColor(test.final_result)} text-white shadow-sm`}>
-                                                {getCategoryName(test.final_result)}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                {/* Tab Content */}
+                <div className="mt-8">
+                    {activeTab === 'stats' && (
+                        <StatsOverview
+                            categoryDistribution={basicStats.categoryDistribution}
+                            totalTests={basicStats.totalTests}
+                            getSessionToken={getSessionToken}
+                        />
+                    )}
+
+                    {activeTab === 'users' && (
+                        <UsersSection
+                            getSessionToken={getSessionToken}
+                        />
+                    )}
+
+                    {activeTab === 'individual' && (
+                        <IndividualResultSection
+                            getSessionToken={getSessionToken}
+                        />
+                    )}
                 </div>
             </div>
         </div>
