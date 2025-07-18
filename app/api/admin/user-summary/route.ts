@@ -11,6 +11,7 @@ export async function GET(request: NextRequest) {
 
     try {
         jwt.verify(token, jwtSecret);
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
         return NextResponse.json(
             { error: 'Token inválido o expirado' },

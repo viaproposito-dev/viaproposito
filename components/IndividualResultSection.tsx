@@ -234,7 +234,7 @@ export default function IndividualResultSection({ getSessionToken }: IndividualR
                             Historial de Tests
                         </h4>
 
-                        {userSummary.tests.map((test, index) => (
+                        {userSummary.tests.map((test) => (
                             <div key={test.id} className="border border-via-sage/20 rounded-lg p-6 bg-via-cream/10">
                                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
                                     <div>
