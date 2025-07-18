@@ -60,10 +60,24 @@ const QuestionForm = forwardRef<HTMLFormElement, QuestionFormProps>(({
             document.activeElement.blur();
         }
 
+        // Additional cleanup for touch devices - remove hover states from all labels
+        const labels = document.querySelectorAll('label');
+        labels.forEach(label => {
+            label.blur();
+            // Force a reflow to ensure hover states are cleared
+            label.style.transform = 'scale(1)';
+            label.style.boxShadow = 'none';
+        });
+
         // Si no es la última pregunta, avanzar automáticamente después de un breve delay
         if (!isLastQuestion) {
             setTimeout(() => {
                 setCurrentQuestionIndex(prev => prev + 1);
+                // Additional cleanup after navigation
+                setTimeout(() => {
+                    const newLabels = document.querySelectorAll('label');
+                    newLabels.forEach(label => label.blur());
+                }, 100);
             }, 300);
         }
     };
@@ -112,7 +126,7 @@ const QuestionForm = forwardRef<HTMLFormElement, QuestionFormProps>(({
                         </div>
 
                         {/* Opciones de respuesta */}
-                        <div className="space-y-2 sm:space-y-3">
+                        <div className="space-y-2 sm:space-y-3" key={`question-${currentQuestion.id}-options`}>
                             {options.map((option) => {
                                 // Fix: Check if THIS specific question has been answered with this option value
                                 const isSelected = answers[currentQuestion.id] === option.value;
@@ -130,21 +144,27 @@ const QuestionForm = forwardRef<HTMLFormElement, QuestionFormProps>(({
                                         />
                                         <label
                                             htmlFor={`q${currentQuestion.id}-o${option.value}`}
+                                            onTouchEnd={(e) => {
+                                                // Force remove any hover states on touch devices
+                                                const element = e.currentTarget;
+                                                element.blur();
+                                                setTimeout(() => element.blur(), 50);
+                                            }}
                                             className={`
                                                 block w-full p-3 sm:p-4 border-2 rounded-lg cursor-pointer 
                                                 transition-all duration-200 font-poppins text-left text-sm sm:text-base
                                                 transform active:scale-[0.98] focus:outline-none
-                                                ${unansweredQuestions.includes(currentQuestion.id)
-                                                    ? 'border-via-orange/30 hover:border-via-orange/60 active:border-via-orange/80'
-                                                    : 'border-via-sage/30 hover:border-via-primary/60 active:border-via-primary/80'}
                                                 ${isSelected
                                                     ? unansweredQuestions.includes(currentQuestion.id)
                                                         ? 'border-via-orange bg-via-orange/10 text-via-orange font-semibold shadow-lg scale-[1.02]'
                                                         : 'border-via-primary bg-via-primary/10 text-via-primary font-semibold shadow-lg scale-[1.02]'
-                                                    : 'text-via-primary/80 bg-white hover:bg-via-cream/50 active:bg-via-cream/70'}
-                                                @media (hover: hover) {
-                                                    ${!isSelected ? 'hover:scale-[1.02] hover:shadow-md' : ''}
+                                                    : unansweredQuestions.includes(currentQuestion.id)
+                                                        ? 'border-via-orange/30 text-via-primary/80 bg-white'
+                                                        : 'border-via-sage/30 text-via-primary/80 bg-white'
                                                 }
+                                                ${!isSelected ? 'hover:scale-[1.02] hover:shadow-md' : ''}
+                                                ${!isSelected && unansweredQuestions.includes(currentQuestion.id) ? 'hover:border-via-orange/60 hover:bg-via-cream/50' : ''}
+                                                ${!isSelected && !unansweredQuestions.includes(currentQuestion.id) ? 'hover:border-via-primary/60 hover:bg-via-cream/50' : ''}
                                             `}
                                         >
                                             <div className="flex items-center justify-between">
