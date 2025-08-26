@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
             );
         }
 
-        // Obtener resumen del usuario
+        // Obtener resumen del usuario con información demográfica del test más reciente
         const userStatsResult = await query(`
             SELECT 
                 COUNT(*) AS total_tests,
@@ -54,10 +54,28 @@ export async function GET(request: NextRequest) {
             WHERE email = $1
         `, [email]);
 
+        // Obtener información demográfica más reciente
+        const userDemographicsResult = await query(`
+            SELECT 
+                birth_year,
+                gender,
+                occupation,
+                marital_status,
+                test_date
+            FROM test_results 
+            WHERE email = $1 
+            ORDER BY test_date DESC 
+            LIMIT 1
+        `, [email]);
+
         // Obtener todos los tests del usuario con sus puntajes
         const userTestsResult = await query(`
             SELECT 
                 tr.id,
+                tr.birth_year,
+                tr.gender,
+                tr.occupation,
+                tr.marital_status,
                 tr.test_date AT TIME ZONE 'UTC' as test_date,
                 tr.final_result,
                 cs.category_name,
@@ -75,6 +93,10 @@ export async function GET(request: NextRequest) {
             if (!testsMap.has(row.id)) {
                 testsMap.set(row.id, {
                     id: row.id,
+                    birth_year: row.birth_year,
+                    gender: row.gender,
+                    occupation: row.occupation,
+                    marital_status: row.marital_status,
                     test_date: row.test_date,
                     final_result: row.final_result,
                     categoryScores: {
@@ -93,12 +115,20 @@ export async function GET(request: NextRequest) {
 
         const tests = Array.from(testsMap.values());
         const userStats = userStatsResult.rows[0];
+        const demographics = userDemographicsResult.rows[0];
 
         return NextResponse.json({
             email,
             totalTests: parseInt(userStats.total_tests),
             firstTest: userStats.first_test,
             lastTest: userStats.last_test,
+            demographics: demographics ? {
+                birth_year: demographics.birth_year,
+                gender: demographics.gender,
+                occupation: demographics.occupation,
+                marital_status: demographics.marital_status,
+                last_updated: demographics.test_date
+            } : null,
             tests
         });
     } catch (error) {

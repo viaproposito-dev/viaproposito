@@ -15,11 +15,12 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Verificar que el email y el ID del resultado coincidan
+        // Obtener todos los datos del test incluyendo información demográfica
         const testResult = await query(
-            `SELECT tr.id, tr.email, tr.final_result
-       FROM test_results tr
-       WHERE tr.id = $1 AND tr.email = $2`,
+            `SELECT tr.id, tr.email, tr.final_result, tr.birth_year, tr.gender, 
+                    tr.occupation, tr.marital_status, tr.test_date
+             FROM test_results tr
+             WHERE tr.id = $1 AND tr.email = $2`,
             [resultId, email]
         );
 
@@ -33,21 +34,30 @@ export async function POST(request: NextRequest) {
         // Obtener los puntajes por categoría
         const categoryScores = await query(
             `SELECT category_name, score
-       FROM category_scores
-       WHERE test_result_id = $1`,
+             FROM category_scores
+             WHERE test_result_id = $1`,
             [resultId]
         );
 
         // Obtener la categoría ganadora y su puntaje
-        const { final_result } = testResult.rows[0];
+        const testData = testResult.rows[0];
         const winningCategory = {
-            category: final_result,
-            score: categoryScores.rows.find(row => row.category_name === final_result)?.score || 0,
-            order: ['desenganchados', 'soñadores', 'aficionados', 'comprometidos'].indexOf(final_result) + 1
+            category: testData.final_result,
+            score: categoryScores.rows.find(row => row.category_name === testData.final_result)?.score || 0,
+            order: ['desenganchados', 'soñadores', 'aficionados', 'comprometidos'].indexOf(testData.final_result) + 1
         };
 
-        // Enviar el correo
-        const emailResult = await sendResultEmail(email, winningCategory);
+        // Preparar los datos del usuario para el email
+        const userData = {
+            birthYear: testData.birth_year,
+            gender: testData.gender,
+            occupation: testData.occupation,
+            maritalStatus: testData.marital_status,
+            testDate: testData.test_date
+        };
+
+        // Enviar el correo con los datos del usuario
+        const emailResult = await sendResultEmail(email, winningCategory, userData);
 
         if (!emailResult.success) {
             throw new Error('Error al enviar el correo electrónico');

@@ -5,6 +5,10 @@ import { DateTime } from "luxon";
 
 interface UserTest {
     id: number;
+    birth_year?: number;
+    gender?: string;
+    occupation?: string;
+    marital_status?: string;
     test_date: string;
     final_result: string;
     categoryScores: {
@@ -15,11 +19,20 @@ interface UserTest {
     };
 }
 
+interface Demographics {
+    birth_year?: number;
+    gender?: string;
+    occupation?: string;
+    marital_status?: string;
+    last_updated: string;
+}
+
 interface UserSummary {
     email: string;
     totalTests: number;
     firstTest: string;
     lastTest: string;
+    demographics?: Demographics;
     tests: UserTest[];
 }
 
@@ -33,6 +46,7 @@ export default function IndividualResultSection({ getSessionToken }: IndividualR
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
     const [hasSearched, setHasSearched] = useState(false);
+    const [expandedTests, setExpandedTests] = useState<Set<number>>(new Set());
 
     const handleSearch = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -70,6 +84,73 @@ export default function IndividualResultSection({ getSessionToken }: IndividualR
             setError('Error al buscar el usuario. Inténtalo de nuevo.');
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    const toggleTestExpansion = (testId: number) => {
+        const newExpanded = new Set(expandedTests);
+        if (newExpanded.has(testId)) {
+            newExpanded.delete(testId);
+        } else {
+            newExpanded.add(testId);
+        }
+        setExpandedTests(newExpanded);
+    };
+
+    const formatDemographicValue = (key: string, value?: string | number): string => {
+        if (!value) return 'No especificado';
+
+        switch (key) {
+            case 'gender':
+                switch (value) {
+                    case 'masculino': return 'Masculino';
+                    case 'femenino': return 'Femenino';
+                    case 'otro': return 'Otro';
+                    default: return value as string;
+                }
+            case 'occupation':
+                const occupationMap: { [key: string]: string } = {
+                    'estudiante': 'Estudiante',
+                    'medico': 'Médico',
+                    'ingeniero': 'Ingeniero',
+                    'abogado': 'Abogado',
+                    'maestro': 'Maestro/Profesor',
+                    'enfermero': 'Enfermero',
+                    'contador': 'Contador',
+                    'arquitecto': 'Arquitecto',
+                    'psicologo': 'Psicólogo',
+                    'vendedor': 'Vendedor',
+                    'empresario': 'Empresario',
+                    'empleado_publico': 'Empleado Público',
+                    'trabajador_social': 'Trabajador Social',
+                    'artista': 'Artista',
+                    'chef': 'Chef/Cocinero',
+                    'policia': 'Policía',
+                    'bombero': 'Bombero',
+                    'tecnico': 'Técnico',
+                    'comerciante': 'Comerciante',
+                    'empleado_domestico': 'Empleado Doméstico',
+                    'jubilado': 'Jubilado',
+                    'desempleado': 'Desempleado',
+                    'otro': 'Otro'
+                };
+                return occupationMap[value as string] || value as string;
+            case 'marital_status':
+                switch (value) {
+                    case 'soltero': return 'Soltero/a';
+                    case 'casado': return 'Casado/a';
+                    case 'union_libre': return 'Unión Libre';
+                    case 'divorciado': return 'Divorciado/a';
+                    case 'viudo': return 'Viudo/a';
+                    case 'separado': return 'Separado/a';
+                    default: return value as string;
+                }
+            case 'birth_year':
+                const currentYear = new Date().getFullYear();
+                const age = currentYear - (value as number);
+                return `${value} (${age} años)`;
+            default:
+                return value.toString();
         }
     };
 
@@ -197,11 +278,11 @@ export default function IndividualResultSection({ getSessionToken }: IndividualR
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-3 text-via-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                         </svg>
-                        Resumen de {userSummary.email}
+                        Perfil de {userSummary.email}
                     </h3>
 
                     {/* User Stats */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                         <div className="bg-via-cream/30 p-4 rounded-lg border border-via-sage/10">
                             <div className="text-2xl font-poppins font-bold text-via-primary">{userSummary.totalTests}</div>
                             <div className="text-sm font-poppins text-via-primary/70">Tests Completados</div>
@@ -228,6 +309,43 @@ export default function IndividualResultSection({ getSessionToken }: IndividualR
                         </div>
                     </div>
 
+                    {/* Demographics Section */}
+                    {userSummary.demographics && (
+                        <div className="mb-8">
+                            <h4 className="text-lg font-poppins font-semibold text-via-primary mb-4 flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-via-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                Información Demográfica
+                            </h4>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-4 bg-via-cream/20 rounded-lg border border-via-sage/10">
+                                <div className="bg-white p-3 rounded-lg border border-via-sage/10">
+                                    <dt className="text-xs font-poppins font-semibold text-via-primary/60 uppercase tracking-wider mb-1">Año de Nacimiento</dt>
+                                    <dd className="text-sm font-poppins text-via-primary">{formatDemographicValue('birth_year', userSummary.demographics.birth_year)}</dd>
+                                </div>
+                                <div className="bg-white p-3 rounded-lg border border-via-sage/10">
+                                    <dt className="text-xs font-poppins font-semibold text-via-primary/60 uppercase tracking-wider mb-1">Sexo</dt>
+                                    <dd className="text-sm font-poppins text-via-primary">{formatDemographicValue('gender', userSummary.demographics.gender)}</dd>
+                                </div>
+                                <div className="bg-white p-3 rounded-lg border border-via-sage/10">
+                                    <dt className="text-xs font-poppins font-semibold text-via-primary/60 uppercase tracking-wider mb-1">Ocupación</dt>
+                                    <dd className="text-sm font-poppins text-via-primary">{formatDemographicValue('occupation', userSummary.demographics.occupation)}</dd>
+                                </div>
+                                <div className="bg-white p-3 rounded-lg border border-via-sage/10">
+                                    <dt className="text-xs font-poppins font-semibold text-via-primary/60 uppercase tracking-wider mb-1">Estado Civil</dt>
+                                    <dd className="text-sm font-poppins text-via-primary">{formatDemographicValue('marital_status', userSummary.demographics.marital_status)}</dd>
+                                </div>
+                            </div>
+                            <p className="text-xs font-poppins text-via-primary/50 mt-2">
+                                * Información del test más reciente ({DateTime.fromISO(userSummary.demographics.last_updated).setZone("America/Monterrey").toLocaleString({
+                                    day: "numeric",
+                                    month: "short",
+                                    year: "numeric"
+                                })})
+                            </p>
+                        </div>
+                    )}
+
                     {/* Individual Tests */}
                     <div className="space-y-6">
                         <h4 className="text-lg font-poppins font-semibold text-via-primary border-b border-via-sage/20 pb-2">
@@ -237,10 +355,28 @@ export default function IndividualResultSection({ getSessionToken }: IndividualR
                         {userSummary.tests.map((test) => (
                             <div key={test.id} className="border border-via-sage/20 rounded-lg p-6 bg-via-cream/10">
                                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
-                                    <div>
-                                        <h5 className="font-poppins font-semibold text-via-primary">
-                                            Test #{test.id} - {formatDate(test.test_date)}
-                                        </h5>
+                                    <div className="flex-1">
+                                        <div className="flex items-center gap-3">
+                                            <h5 className="font-poppins font-semibold text-via-primary">
+                                                Test #{test.id}
+                                            </h5>
+                                            <button
+                                                onClick={() => toggleTestExpansion(test.id)}
+                                                className="text-via-primary hover:text-via-secondary transition-colors"
+                                            >
+                                                <svg
+                                                    className={`h-4 w-4 transition-transform duration-200 ${expandedTests.has(test.id) ? 'rotate-90' : ''}`}
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    viewBox="0 0 24 24"
+                                                >
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                        <div className="text-sm font-poppins text-via-primary/70 mt-1">
+                                            {formatDate(test.test_date)}
+                                        </div>
                                         <div className="mt-2">
                                             <span className={`px-3 py-1.5 inline-flex text-sm font-poppins font-semibold rounded-full ${getCategoryColor(test.final_result)} text-white shadow-sm`}>
                                                 Resultado: {getCategoryName(test.final_result)}
@@ -249,38 +385,67 @@ export default function IndividualResultSection({ getSessionToken }: IndividualR
                                     </div>
                                 </div>
 
-                                {/* Category Scores */}
-                                <div className="space-y-4">
-                                    <h6 className="font-poppins font-medium text-via-primary/80">Puntajes por Categoría:</h6>
-
-                                    {Object.entries(test.categoryScores).map(([category, score]) => {
-                                        const percentage = getScorePercentage(score, category);
-                                        const maxScore = getMaxScore(category);
-                                        const categoryColor = getCategoryColor(category);
-
-                                        return (
-                                            <div key={category} className="flex items-center justify-between p-3 bg-white rounded-lg border border-via-sage/10">
-                                                <div className="flex items-center">
-                                                    <span className={`inline-block w-3 h-3 rounded-full mr-3 ${categoryColor}`}></span>
-                                                    <span className="font-poppins font-medium text-via-primary">
-                                                        {getCategoryName(category)}
-                                                    </span>
-                                                </div>
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-24 bg-via-sage/20 rounded-full h-2">
-                                                        <div
-                                                            className={`h-2 rounded-full ${categoryColor}`}
-                                                            style={{ width: `${percentage}%` }}
-                                                        ></div>
+                                {expandedTests.has(test.id) && (
+                                    <>
+                                        {/* Demographics for this test */}
+                                        {(test.birth_year || test.gender || test.occupation || test.marital_status) && (
+                                            <div className="mb-6 p-4 bg-white rounded-lg border border-via-sage/10">
+                                                <h6 className="font-poppins font-medium text-via-primary/80 mb-3">Información Demográfica:</h6>
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                                                    <div>
+                                                        <dt className="text-xs font-poppins font-semibold text-via-primary/60 uppercase tracking-wider">Año Nacimiento</dt>
+                                                        <dd className="text-sm font-poppins text-via-primary">{formatDemographicValue('birth_year', test.birth_year)}</dd>
                                                     </div>
-                                                    <span className="font-poppins font-semibold text-via-primary text-sm w-12 text-right">
-                                                        {score}/{maxScore}
-                                                    </span>
+                                                    <div>
+                                                        <dt className="text-xs font-poppins font-semibold text-via-primary/60 uppercase tracking-wider">Sexo</dt>
+                                                        <dd className="text-sm font-poppins text-via-primary">{formatDemographicValue('gender', test.gender)}</dd>
+                                                    </div>
+                                                    <div>
+                                                        <dt className="text-xs font-poppins font-semibold text-via-primary/60 uppercase tracking-wider">Ocupación</dt>
+                                                        <dd className="text-sm font-poppins text-via-primary">{formatDemographicValue('occupation', test.occupation)}</dd>
+                                                    </div>
+                                                    <div>
+                                                        <dt className="text-xs font-poppins font-semibold text-via-primary/60 uppercase tracking-wider">Estado Civil</dt>
+                                                        <dd className="text-sm font-poppins text-via-primary">{formatDemographicValue('marital_status', test.marital_status)}</dd>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        );
-                                    })}
-                                </div>
+                                        )}
+
+                                        {/* Category Scores */}
+                                        <div className="space-y-4">
+                                            <h6 className="font-poppins font-medium text-via-primary/80">Puntajes por Categoría:</h6>
+
+                                            {Object.entries(test.categoryScores).map(([category, score]) => {
+                                                const percentage = getScorePercentage(score, category);
+                                                const maxScore = getMaxScore(category);
+                                                const categoryColor = getCategoryColor(category);
+
+                                                return (
+                                                    <div key={category} className="flex items-center justify-between p-3 bg-white rounded-lg border border-via-sage/10">
+                                                        <div className="flex items-center">
+                                                            <span className={`inline-block w-3 h-3 rounded-full mr-3 ${categoryColor}`}></span>
+                                                            <span className="font-poppins font-medium text-via-primary">
+                                                                {getCategoryName(category)}
+                                                            </span>
+                                                        </div>
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="w-24 bg-via-sage/20 rounded-full h-2">
+                                                                <div
+                                                                    className={`h-2 rounded-full ${categoryColor}`}
+                                                                    style={{ width: `${percentage}%` }}
+                                                                ></div>
+                                                            </div>
+                                                            <span className="font-poppins font-semibold text-via-primary text-sm w-12 text-right">
+                                                                {score}/{maxScore}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </>
+                                )}
                             </div>
                         ))}
                     </div>

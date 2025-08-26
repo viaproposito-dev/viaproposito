@@ -13,6 +13,10 @@ export interface CategoryResult {
 
 export interface TestResult {
     email: string;
+    birthYear: number;
+    gender: string;
+    occupation: string;
+    maritalStatus: string;
     date: string;
     answers: Record<number, number>;
     categoryScores: {
@@ -22,4 +26,12 @@ export interface TestResult {
         comprometidos: number;
     };
     result: string;
+}
+
+export interface UserDemographics {
+    email: string;
+    birthYear: number;
+    gender: string;
+    occupation: string;
+    maritalStatus: string;
 }

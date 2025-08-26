@@ -7,6 +7,13 @@ import StatsOverview from '@/components/StatsOverview';
 import UsersSection from '@/components/UsersSection';
 import IndividualResultSection from '@/components/IndividualResultSection';
 
+interface DemographicData {
+    gender: Array<{ gender: string; count: number }>;
+    ageGroups: Array<{ age_group: string; count: number }>;
+    occupations: Array<{ occupation: string; count: number }>;
+    maritalStatus: Array<{ marital_status: string; count: number }>;
+}
+
 interface BasicStats {
     totalTests: number;
     totalUsers: number;
@@ -14,6 +21,7 @@ interface BasicStats {
         category: string;
         count: number;
     }>;
+    demographics: DemographicData;
 }
 
 export default function AdminDashboard() {
@@ -204,8 +212,8 @@ export default function AdminDashboard() {
                     <button
                         onClick={() => setActiveTab('stats')}
                         className={`group relative rounded-lg shadow-md transition-all duration-200 transform hover:scale-102 focus:outline-none focus:ring-2 focus:ring-via-primary/50 ${activeTab === 'stats'
-                                ? 'bg-via-primary text-white shadow-lg scale-102'
-                                : 'bg-white text-via-primary hover:shadow-lg hover:bg-via-primary/5 border border-via-sage/20'
+                            ? 'bg-via-primary text-white shadow-lg scale-102'
+                            : 'bg-white text-via-primary hover:shadow-lg hover:bg-via-primary/5 border border-via-sage/20'
                             }`}
                     >
                         <div className="p-4 text-left">
@@ -222,8 +230,8 @@ export default function AdminDashboard() {
                                     </p>
                                 </div>
                                 <div className={`p-2 rounded-lg transition-all duration-200 ${activeTab === 'stats'
-                                        ? 'bg-white/20 text-white'
-                                        : 'bg-via-primary/10 text-via-primary group-hover:bg-via-primary/20'
+                                    ? 'bg-white/20 text-white'
+                                    : 'bg-via-primary/10 text-via-primary group-hover:bg-via-primary/20'
                                     }`}>
                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
@@ -238,8 +246,8 @@ export default function AdminDashboard() {
                     <button
                         onClick={() => setActiveTab('users')}
                         className={`group relative rounded-lg shadow-md transition-all duration-200 transform hover:scale-102 focus:outline-none focus:ring-2 focus:ring-via-sage/50 ${activeTab === 'users'
-                                ? 'bg-via-sage text-white shadow-lg scale-102'
-                                : 'bg-white text-via-primary hover:shadow-lg hover:bg-via-sage/5 border border-via-sage/20'
+                            ? 'bg-via-sage text-white shadow-lg scale-102'
+                            : 'bg-white text-via-primary hover:shadow-lg hover:bg-via-sage/5 border border-via-sage/20'
                             }`}
                     >
                         <div className="p-4 text-left">
@@ -256,8 +264,8 @@ export default function AdminDashboard() {
                                     </p>
                                 </div>
                                 <div className={`p-2 rounded-lg transition-all duration-200 ${activeTab === 'users'
-                                        ? 'bg-white/20 text-white'
-                                        : 'bg-via-sage/10 text-via-sage group-hover:bg-via-sage/20'
+                                    ? 'bg-white/20 text-white'
+                                    : 'bg-via-sage/10 text-via-sage group-hover:bg-via-sage/20'
                                     }`}>
                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
@@ -271,8 +279,8 @@ export default function AdminDashboard() {
                     <button
                         onClick={() => setActiveTab('individual')}
                         className={`group relative rounded-lg shadow-md transition-all duration-200 transform hover:scale-102 focus:outline-none focus:ring-2 focus:ring-via-light/50 ${activeTab === 'individual'
-                                ? 'bg-via-light text-white shadow-lg scale-102'
-                                : 'bg-white text-via-primary hover:shadow-lg hover:bg-via-light/5 border border-via-sage/20'
+                            ? 'bg-via-light text-white shadow-lg scale-102'
+                            : 'bg-white text-via-primary hover:shadow-lg hover:bg-via-light/5 border border-via-sage/20'
                             }`}
                     >
                         <div className="p-4 text-left">
@@ -289,8 +297,8 @@ export default function AdminDashboard() {
                                     </p>
                                 </div>
                                 <div className={`p-2 rounded-lg transition-all duration-200 ${activeTab === 'individual'
-                                        ? 'bg-white/20 text-white'
-                                        : 'bg-via-light/10 text-via-light group-hover:bg-via-light/20'
+                                    ? 'bg-white/20 text-white'
+                                    : 'bg-via-light/10 text-via-light group-hover:bg-via-light/20'
                                     }`}>
                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -307,6 +315,7 @@ export default function AdminDashboard() {
                         <StatsOverview
                             categoryDistribution={basicStats.categoryDistribution}
                             totalTests={basicStats.totalTests}
+                            demographics={basicStats.demographics}
                             getSessionToken={getSessionToken}
                         />
                     )}

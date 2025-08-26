@@ -15,10 +15,10 @@ export async function POST(request: NextRequest) {
 
         // Obtener los datos del request
         const data = await request.json();
-        const { email, answers, categoryScores, result } = data;
+        const { email, birthYear, gender, occupation, maritalStatus, answers, categoryScores, result } = data;
 
-        // Validar datos
-        if (!email || !answers || !categoryScores || !result) {
+        // Validar datos obligatorios
+        if (!email || !birthYear || !gender || !occupation || !maritalStatus || !answers || !categoryScores || !result) {
             return NextResponse.json(
                 { error: 'Datos incompletos' },
                 { status: 400 }
@@ -29,10 +29,10 @@ export async function POST(request: NextRequest) {
         await query('BEGIN');
 
         try {
-            // 1. Insertar el resultado principal
+            // 1. Insertar el resultado principal con los nuevos campos demográficos
             const testResult = await query(
-                'INSERT INTO test_results (email, final_result) VALUES ($1, $2) RETURNING id',
-                [email, result]
+                'INSERT INTO test_results (email, birth_year, gender, occupation, marital_status, final_result) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id',
+                [email, birthYear, gender, occupation, maritalStatus, result]
             );
 
             const testResultId = testResult.rows[0].id;
@@ -75,14 +75,25 @@ export async function POST(request: NextRequest) {
     }
 }
 
-// Obtener todos los resultados (para posible panel administrativo)
+// Obtener todos los resultados (para panel administrativo)
 export async function GET() {
     try {
         const results = await query(`
-      SELECT tr.id, tr.email, tr.test_date, tr.final_result
-      FROM test_results tr
-      ORDER BY tr.test_date DESC
-    `);
+            SELECT 
+                tr.id, 
+                tr.email, 
+                tr.birth_year,
+                tr.gender,
+                tr.occupation,
+                tr.marital_status,
+                tr.test_date, 
+                tr.final_result,
+                (SELECT json_object_agg(cs.category_name, cs.score) 
+                 FROM category_scores cs 
+                 WHERE cs.test_result_id = tr.id) as category_scores
+            FROM test_results tr
+            ORDER BY tr.test_date DESC
+        `);
 
         return NextResponse.json(results.rows);
     } catch (error) {

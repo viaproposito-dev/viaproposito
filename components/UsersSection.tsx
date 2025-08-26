@@ -6,6 +6,10 @@ import { DateTime } from "luxon";
 interface TestResult {
     id: number;
     email: string;
+    birth_year?: number;
+    gender?: string;
+    occupation?: string;
+    marital_status?: string;
     test_date: string;
     final_result: string;
 }
@@ -22,6 +26,7 @@ export default function UsersSection({ getSessionToken }: UsersSectionProps) {
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [totalTests, setTotalTests] = useState(0);
+    const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
     const testsPerPage = 20;
 
     useEffect(() => {
@@ -69,6 +74,16 @@ export default function UsersSection({ getSessionToken }: UsersSectionProps) {
         setFilteredTests(filtered);
     };
 
+    const toggleRowExpansion = (testId: number) => {
+        const newExpanded = new Set(expandedRows);
+        if (newExpanded.has(testId)) {
+            newExpanded.delete(testId);
+        } else {
+            newExpanded.add(testId);
+        }
+        setExpandedRows(newExpanded);
+    };
+
     const getCategoryName = (category: string): string => {
         const categoryMap: Record<string, string> = {
             'desenganchados': 'Desenganchados',
@@ -87,6 +102,63 @@ export default function UsersSection({ getSessionToken }: UsersSectionProps) {
             'comprometidos': 'bg-[#295244]'
         };
         return colorMap[category] || 'bg-via-sage';
+    };
+
+    const formatDemographicValue = (key: string, value?: string | number): string => {
+        if (!value) return 'No especificado';
+
+        switch (key) {
+            case 'gender':
+                switch (value) {
+                    case 'masculino': return 'Masculino';
+                    case 'femenino': return 'Femenino';
+                    case 'otro': return 'Otro';
+                    default: return value as string;
+                }
+            case 'occupation':
+                const occupationMap: { [key: string]: string } = {
+                    'estudiante': 'Estudiante',
+                    'medico': 'Médico',
+                    'ingeniero': 'Ingeniero',
+                    'abogado': 'Abogado',
+                    'maestro': 'Maestro/Profesor',
+                    'enfermero': 'Enfermero',
+                    'contador': 'Contador',
+                    'arquitecto': 'Arquitecto',
+                    'psicologo': 'Psicólogo',
+                    'vendedor': 'Vendedor',
+                    'empresario': 'Empresario',
+                    'empleado_publico': 'Empleado Público',
+                    'trabajador_social': 'Trabajador Social',
+                    'artista': 'Artista',
+                    'chef': 'Chef/Cocinero',
+                    'policia': 'Policía',
+                    'bombero': 'Bombero',
+                    'tecnico': 'Técnico',
+                    'comerciante': 'Comerciante',
+                    'empleado_domestico': 'Empleado Doméstico',
+                    'jubilado': 'Jubilado',
+                    'desempleado': 'Desempleado',
+                    'otro': 'Otro'
+                };
+                return occupationMap[value as string] || value as string;
+            case 'marital_status':
+                switch (value) {
+                    case 'soltero': return 'Soltero/a';
+                    case 'casado': return 'Casado/a';
+                    case 'union_libre': return 'Unión Libre';
+                    case 'divorciado': return 'Divorciado/a';
+                    case 'viudo': return 'Viudo/a';
+                    case 'separado': return 'Separado/a';
+                    default: return value as string;
+                }
+            case 'birth_year':
+                const currentYear = new Date().getFullYear();
+                const age = currentYear - (value as number);
+                return `${value} (${age} años)`;
+            default:
+                return value.toString();
+        }
     };
 
     const formatDate = (dateString: string): string => {
@@ -174,6 +246,7 @@ export default function UsersSection({ getSessionToken }: UsersSectionProps) {
                         <table className="min-w-full divide-y divide-via-sage/10">
                             <thead className="bg-via-sage/5">
                                 <tr>
+                                    <th scope="col" className="px-6 py-3 text-left text-xs font-poppins font-semibold text-via-primary uppercase tracking-wider"></th>
                                     <th scope="col" className="px-6 py-3 text-left text-xs font-poppins font-semibold text-via-primary uppercase tracking-wider">ID</th>
                                     <th scope="col" className="px-6 py-3 text-left text-xs font-poppins font-semibold text-via-primary uppercase tracking-wider">Email</th>
                                     <th scope="col" className="px-6 py-3 text-left text-xs font-poppins font-semibold text-via-primary uppercase tracking-wider">Fecha</th>
@@ -182,16 +255,57 @@ export default function UsersSection({ getSessionToken }: UsersSectionProps) {
                             </thead>
                             <tbody className="bg-white divide-y divide-via-sage/10">
                                 {(searchEmail ? filteredTests : tests).map((test) => (
-                                    <tr key={test.id} className="hover:bg-via-cream/30 transition-colors duration-150">
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-poppins text-via-primary/70">#{test.id}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-poppins font-medium text-via-primary">{test.email}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-poppins text-via-primary/70">{formatDate(test.test_date)}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <span className={`px-3 py-1.5 inline-flex text-xs font-poppins font-semibold rounded-full ${getCategoryColor(test.final_result)} text-white shadow-sm`}>
-                                                {getCategoryName(test.final_result)}
-                                            </span>
-                                        </td>
-                                    </tr>
+                                    <React.Fragment key={test.id}>
+                                        <tr className="hover:bg-via-cream/30 transition-colors duration-150">
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <button
+                                                    onClick={() => toggleRowExpansion(test.id)}
+                                                    className="text-via-primary hover:text-via-secondary transition-colors"
+                                                >
+                                                    <svg
+                                                        className={`h-5 w-5 transition-transform duration-200 ${expandedRows.has(test.id) ? 'rotate-90' : ''}`}
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        viewBox="0 0 24 24"
+                                                    >
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                                    </svg>
+                                                </button>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-poppins text-via-primary/70">#{test.id}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-poppins font-medium text-via-primary">{test.email}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-poppins text-via-primary/70">{formatDate(test.test_date)}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <span className={`px-3 py-1.5 inline-flex text-xs font-poppins font-semibold rounded-full ${getCategoryColor(test.final_result)} text-white shadow-sm`}>
+                                                    {getCategoryName(test.final_result)}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        {expandedRows.has(test.id) && (
+                                            <tr>
+                                                <td colSpan={5} className="px-6 py-4 bg-via-cream/20">
+                                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                                                        <div className="bg-white p-3 rounded-lg border border-via-sage/10">
+                                                            <dt className="text-xs font-poppins font-semibold text-via-primary/60 uppercase tracking-wider mb-1">Año de Nacimiento</dt>
+                                                            <dd className="text-sm font-poppins text-via-primary">{formatDemographicValue('birth_year', test.birth_year)}</dd>
+                                                        </div>
+                                                        <div className="bg-white p-3 rounded-lg border border-via-sage/10">
+                                                            <dt className="text-xs font-poppins font-semibold text-via-primary/60 uppercase tracking-wider mb-1">Sexo</dt>
+                                                            <dd className="text-sm font-poppins text-via-primary">{formatDemographicValue('gender', test.gender)}</dd>
+                                                        </div>
+                                                        <div className="bg-white p-3 rounded-lg border border-via-sage/10">
+                                                            <dt className="text-xs font-poppins font-semibold text-via-primary/60 uppercase tracking-wider mb-1">Ocupación</dt>
+                                                            <dd className="text-sm font-poppins text-via-primary">{formatDemographicValue('occupation', test.occupation)}</dd>
+                                                        </div>
+                                                        <div className="bg-white p-3 rounded-lg border border-via-sage/10">
+                                                            <dt className="text-xs font-poppins font-semibold text-via-primary/60 uppercase tracking-wider mb-1">Estado Civil</dt>
+                                                            <dd className="text-sm font-poppins text-via-primary">{formatDemographicValue('marital_status', test.marital_status)}</dd>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </React.Fragment>
                                 ))}
                             </tbody>
                         </table>

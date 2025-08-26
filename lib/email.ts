@@ -12,6 +12,88 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+// Interface para datos del usuario
+interface UserTestData {
+  birthYear: number;
+  gender: string;
+  occupation: string;
+  maritalStatus: string;
+  testDate: string;
+}
+
+// Función para formatear los datos demográficos para mostrar
+const formatDemographicData = (userData: UserTestData) => {
+  const formatGender = (gender: string) => {
+    switch (gender) {
+      case 'masculino': return 'Masculino';
+      case 'femenino': return 'Femenino';
+      case 'otro': return 'Otro';
+      default: return gender;
+    }
+  };
+
+  const formatOccupation = (occupation: string) => {
+    const occupationMap: { [key: string]: string } = {
+      'estudiante': 'Estudiante',
+      'medico': 'Médico',
+      'ingeniero': 'Ingeniero',
+      'abogado': 'Abogado',
+      'maestro': 'Maestro/Profesor',
+      'enfermero': 'Enfermero',
+      'contador': 'Contador',
+      'arquitecto': 'Arquitecto',
+      'psicologo': 'Psicólogo',
+      'vendedor': 'Vendedor',
+      'empresario': 'Empresario',
+      'empleado_publico': 'Empleado Público',
+      'trabajador_social': 'Trabajador Social',
+      'artista': 'Artista',
+      'chef': 'Chef/Cocinero',
+      'policia': 'Policía',
+      'bombero': 'Bombero',
+      'tecnico': 'Técnico',
+      'comerciante': 'Comerciante',
+      'empleado_domestico': 'Empleado Doméstico',
+      'jubilado': 'Jubilado',
+      'desempleado': 'Desempleado',
+      'otro': 'Otro'
+    };
+    return occupationMap[occupation] || occupation;
+  };
+
+  const formatMaritalStatus = (status: string) => {
+    const statusMap: { [key: string]: string } = {
+      'soltero': 'Soltero/a',
+      'casado': 'Casado/a',
+      'union_libre': 'Unión Libre',
+      'divorciado': 'Divorciado/a',
+      'viudo': 'Viudo/a',
+      'separado': 'Separado/a'
+    };
+    return statusMap[status] || status;
+  };
+
+  const formatTestDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('es-ES', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZone: 'America/Mexico_City'
+    });
+  };
+
+  return {
+    birthYear: userData.birthYear,
+    gender: formatGender(userData.gender),
+    occupation: formatOccupation(userData.occupation),
+    maritalStatus: formatMaritalStatus(userData.maritalStatus),
+    testDate: formatTestDate(userData.testDate)
+  };
+};
+
 // Datos específicos para cada categoría con colores de Vía Propósito
 const getCategoryData = (category: string) => {
   switch (category) {
@@ -56,9 +138,14 @@ const getCategoryData = (category: string) => {
 /**
  * Crea una plantilla HTML para el correo electrónico con los resultados
  */
-const createEmailTemplate = (result: CategoryResult) => {
+const createEmailTemplate = (result: CategoryResult, userData?: UserTestData) => {
   const categoryData = getCategoryData(result.category);
   const currentYear = new Date().getFullYear();
+
+  let formattedUserData = null;
+  if (userData) {
+    formattedUserData = formatDemographicData(userData);
+  }
 
   return `
     <!DOCTYPE html>
@@ -239,6 +326,41 @@ const createEmailTemplate = (result: CategoryResult) => {
           color: #295244 !important;
         }
         
+        .user-data-section {
+          background: #F8F5E9 !important;
+          border: 1px solid #E5E0D3 !important;
+          padding: 20px !important;
+          border-radius: 10px !important;
+          margin-top: 30px !important;
+        }
+        
+        .user-data-section h3 {
+          color: #295244 !important;
+          font-size: 16px !important;
+          font-weight: 600 !important;
+          margin-top: 0 !important;
+          margin-bottom: 15px !important;
+          opacity: 0.8 !important;
+        }
+        
+        .user-data-grid {
+          display: grid !important;
+          grid-template-columns: 1fr 1fr !important;
+          gap: 12px !important;
+        }
+        
+        .user-data-item {
+          font-size: 13px !important;
+          color: #295244 !important;
+          opacity: 0.7 !important;
+        }
+        
+        .user-data-item strong {
+          color: #295244 !important;
+          opacity: 1 !important;
+          font-weight: 500 !important;
+        }
+        
         .footer {
           text-align: center !important;
           margin-top: 40px !important;
@@ -305,9 +427,17 @@ const createEmailTemplate = (result: CategoryResult) => {
           color: #295244 !important;
         }
         
+        /* Mobile responsiveness */
+        @media (max-width: 600px) {
+          .user-data-grid {
+            grid-template-columns: 1fr !important;
+            gap: 8px !important;
+          }
+        }
+        
         /* Mobile dark mode specific overrides */
         @media (prefers-color-scheme: dark) {
-          .container, .content, .section, .advice-box, body {
+          .container, .content, .section, .advice-box, .user-data-section, body {
             background-color: #FFFBEF !important;
           }
           
@@ -324,7 +454,8 @@ const createEmailTemplate = (result: CategoryResult) => {
         [data-ogsc] .container,
         [data-ogsc] .content,
         [data-ogsc] .section,
-        [data-ogsc] .advice-box {
+        [data-ogsc] .advice-box,
+        [data-ogsc] .user-data-section {
           background-color: #FFFBEF !important;
         }
         
@@ -380,6 +511,29 @@ const createEmailTemplate = (result: CategoryResult) => {
               <div class="button" style="background: linear-gradient(135deg, ${categoryData.color} 0%, #295244 100%) !important; color: white !important;">Visitar Vía Propósito</div>
             </a>
           </div>
+          
+          ${formattedUserData ? `
+          <div class="user-data-section" style="background: #F8F5E9 !important;">
+            <h3 style="color: #295244 !important;">Resumen de tu información</h3>
+            <div class="user-data-grid">
+              <div class="user-data-item">
+                <strong style="color: #295244 !important;">Año de nacimiento:</strong> ${formattedUserData.birthYear}
+              </div>
+              <div class="user-data-item">
+                <strong style="color: #295244 !important;">Sexo:</strong> ${formattedUserData.gender}
+              </div>
+              <div class="user-data-item">
+                <strong style="color: #295244 !important;">Ocupación:</strong> ${formattedUserData.occupation}
+              </div>
+              <div class="user-data-item">
+                <strong style="color: #295244 !important;">Estado civil:</strong> ${formattedUserData.maritalStatus}
+              </div>
+            </div>
+            <p style="font-size: 12px !important; color: #295244 !important; opacity: 0.6 !important; margin-top: 15px !important; margin-bottom: 0 !important;">
+              Test completado el ${formattedUserData.testDate}
+            </p>
+          </div>
+          ` : ''}
         </div>
         
         <div class="footer" style="background: #295244 !important;">
@@ -396,10 +550,10 @@ const createEmailTemplate = (result: CategoryResult) => {
 /**
  * Envía el correo electrónico con los resultados
  */
-export async function sendResultEmail(email: string, result: CategoryResult) {
+export async function sendResultEmail(email: string, result: CategoryResult, userData?: UserTestData) {
   try {
     const categoryData = getCategoryData(result.category);
-    const htmlContent = createEmailTemplate(result);
+    const htmlContent = createEmailTemplate(result, userData);
 
     // Mejorar el formato del subject y remitente para reducir la probabilidad de spam
     const mailOptions = {

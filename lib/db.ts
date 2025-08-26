@@ -38,37 +38,58 @@ export async function testConnection() {
 // Inicializar las tablas si no existen
 export async function initializeDatabase() {
     try {
-        // Crear tabla para resultados del test
+        // Crear tabla para resultados del test con campos demográficos
         await query(`
-      CREATE TABLE IF NOT EXISTS test_results (
-        id SERIAL PRIMARY KEY,
-        email VARCHAR(255) NOT NULL UNIQUE,
-        test_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        final_result VARCHAR(50) NOT NULL
-      )
-    `);
+            CREATE TABLE IF NOT EXISTS test_results (
+                id SERIAL PRIMARY KEY,
+                email VARCHAR(255) NOT NULL,
+                birth_year INTEGER,
+                gender VARCHAR(10),
+                occupation VARCHAR(100),
+                marital_status VARCHAR(20),
+                test_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                final_result VARCHAR(50) NOT NULL
+            )
+        `);
 
         // Crear tabla para respuestas individuales
         await query(`
-      CREATE TABLE IF NOT EXISTS answers (
-        id SERIAL PRIMARY KEY,
-        test_result_id INTEGER NOT NULL REFERENCES test_results(id) ON DELETE CASCADE,
-        question_id INTEGER NOT NULL,
-        answer_value INTEGER NOT NULL,
-        UNIQUE(test_result_id, question_id)
-      )
-    `);
+            CREATE TABLE IF NOT EXISTS answers (
+                id SERIAL PRIMARY KEY,
+                test_result_id INTEGER NOT NULL REFERENCES test_results(id) ON DELETE CASCADE,
+                question_id INTEGER NOT NULL,
+                answer_value INTEGER NOT NULL,
+                UNIQUE(test_result_id, question_id)
+            )
+        `);
 
         // Crear tabla para puntajes por categoría
         await query(`
-      CREATE TABLE IF NOT EXISTS category_scores (
-        id SERIAL PRIMARY KEY,
-        test_result_id INTEGER NOT NULL REFERENCES test_results(id) ON DELETE CASCADE,
-        category_name VARCHAR(50) NOT NULL,
-        score INTEGER NOT NULL,
-        UNIQUE(test_result_id, category_name)
-      )
-    `);
+            CREATE TABLE IF NOT EXISTS category_scores (
+                id SERIAL PRIMARY KEY,
+                test_result_id INTEGER NOT NULL REFERENCES test_results(id) ON DELETE CASCADE,
+                category_name VARCHAR(50) NOT NULL,
+                score INTEGER NOT NULL,
+                UNIQUE(test_result_id, category_name)
+            )
+        `);
+
+        // Crear índices para mejorar el rendimiento
+        await query(`
+            CREATE INDEX IF NOT EXISTS idx_test_results_email ON test_results(email);
+        `);
+
+        await query(`
+            CREATE INDEX IF NOT EXISTS idx_test_results_test_date ON test_results(test_date);
+        `);
+
+        await query(`
+            CREATE INDEX IF NOT EXISTS idx_answers_test_result_id ON answers(test_result_id);
+        `);
+
+        await query(`
+            CREATE INDEX IF NOT EXISTS idx_category_scores_test_result_id ON category_scores(test_result_id);
+        `);
 
         console.log('Base de datos inicializada correctamente');
         return true;

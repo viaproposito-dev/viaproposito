@@ -7,6 +7,18 @@ interface CategoryDistribution {
     count: number;
 }
 
+interface DemographicItem {
+    [key: string]: string | number;
+    count: number;
+}
+
+interface Demographics {
+    gender: DemographicItem[];
+    ageGroups: DemographicItem[];
+    occupations: DemographicItem[];
+    maritalStatus: DemographicItem[];
+}
+
 interface TestByDay {
     date: string;
     count: number;
@@ -15,10 +27,11 @@ interface TestByDay {
 interface StatsOverviewProps {
     categoryDistribution: CategoryDistribution[];
     totalTests: number;
+    demographics: Demographics;
     getSessionToken: () => string | null;
 }
 
-export default function StatsOverview({ categoryDistribution, totalTests, getSessionToken }: StatsOverviewProps) {
+export default function StatsOverview({ categoryDistribution, totalTests, demographics, getSessionToken }: StatsOverviewProps) {
     const [testsByDay, setTestsByDay] = useState<TestByDay[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -68,6 +81,44 @@ export default function StatsOverview({ categoryDistribution, totalTests, getSes
         return colorMap[category] || 'bg-via-sage';
     };
 
+    const renderDemographicSection = (title: string, data: DemographicItem[], dataKey: string, icon: React.ReactNode) => {
+        if (!data || data.length === 0) return null;
+
+        return (
+            <div className="bg-white rounded-xl shadow-lg p-6 border border-via-sage/20">
+                <h2 className="text-xl font-poppins font-semibold text-via-primary mb-6 flex items-center">
+                    {icon}
+                    {title}
+                </h2>
+                <div className="space-y-4">
+                    {data.map((item, index) => {
+                        const percentage = totalTests > 0 ? (item.count / totalTests) * 100 : 0;
+                        const label = item[dataKey] as string;
+
+                        return (
+                            <div key={index} className="bg-via-cream/30 p-4 rounded-lg border border-via-sage/10">
+                                <div className="flex flex-wrap justify-between mb-3">
+                                    <span className="font-poppins font-medium text-via-primary">
+                                        {label}
+                                    </span>
+                                    <span className="font-poppins font-semibold text-via-primary">
+                                        {item.count} ({percentage.toFixed(1)}%)
+                                    </span>
+                                </div>
+                                <div className="w-full bg-via-sage/20 rounded-full h-3">
+                                    <div
+                                        className="h-3 rounded-full bg-via-primary transition-all duration-500 ease-out"
+                                        style={{ width: `${percentage}%` }}
+                                    ></div>
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
+        );
+    };
+
     return (
         <div className="space-y-8">
             {/* Distribución por categoría */}
@@ -77,7 +128,7 @@ export default function StatsOverview({ categoryDistribution, totalTests, getSes
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
                     </svg>
-                    Distribución por Categoría
+                    Distribución por Categoría de Resultado
                 </h2>
                 <div className="space-y-6">
                     {['comprometidos', 'aficionados', 'soñadores', 'desenganchados'].map((categoryKey) => {
@@ -106,6 +157,49 @@ export default function StatsOverview({ categoryDistribution, totalTests, getSes
                         );
                     })}
                 </div>
+            </div>
+
+            {/* Demographic sections in a 2x2 grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Distribución por género */}
+                {renderDemographicSection(
+                    'Distribución por Sexo',
+                    demographics.gender,
+                    'gender',
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-3 text-via-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                )}
+
+                {/* Distribución por grupos de edad */}
+                {renderDemographicSection(
+                    'Distribución por Edad',
+                    demographics.ageGroups,
+                    'age_group',
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-3 text-via-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                )}
+
+                {/* Distribución por estado civil */}
+                {renderDemographicSection(
+                    'Distribución por Estado Civil',
+                    demographics.maritalStatus,
+                    'marital_status',
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-3 text-via-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                    </svg>
+                )}
+
+                {/* Top ocupaciones */}
+                {renderDemographicSection(
+                    'Principales Ocupaciones',
+                    demographics.occupations,
+                    'occupation',
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-3 text-via-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2-2v2m8 0H8m8 0v6l-3.5 3.5-3.5-3.5V6" />
+                    </svg>
+                )}
             </div>
 
             {/* Tests por día - Últimos 30 días */}

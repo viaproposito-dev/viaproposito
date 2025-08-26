@@ -33,9 +33,17 @@ export async function GET(request: NextRequest) {
         const totalTests = parseInt(totalTestsResult.rows[0].total);
         const totalPages = Math.ceil(totalTests / limit);
 
-        // Obtener tests paginados
+        // Obtener tests paginados con información demográfica
         const testsResult = await query(`
-            SELECT id, email, test_date AT TIME ZONE 'UTC' as test_date, final_result
+            SELECT 
+                id, 
+                email, 
+                birth_year,
+                gender,
+                occupation,
+                marital_status,
+                test_date AT TIME ZONE 'UTC' as test_date, 
+                final_result
             FROM test_results 
             ORDER BY test_date DESC 
             LIMIT $1 OFFSET $2

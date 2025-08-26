@@ -1,3 +1,4 @@
+// app/test/page.tsx
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
@@ -5,7 +6,7 @@ import InstructionsModal from '@/components/InstructionsModal';
 import QuestionForm from '@/components/QuestionForm';
 import ResultsDisplay from '@/components/ResultsDisplay';
 import LoadingOverlay from '@/components/LoadingOverlay';
-import { Question, CategoryResult, TestResult } from '@/types';
+import { Question, CategoryResult, TestResult, UserDemographics } from '@/types';
 
 export default function TestPage() {
     const [showInstructions, setShowInstructions] = useState(true);
@@ -15,14 +16,14 @@ export default function TestPage() {
     const [isLoading, setIsLoading] = useState(false);
     const [unansweredQuestions, setUnansweredQuestions] = useState<number[]>([]);
     const [isValidationVisible, setIsValidationVisible] = useState(false);
-    const [userEmail, setUserEmail] = useState<string>('');
+    const [userData, setUserData] = useState<UserDemographics | null>(null);
     const [submitError, setSubmitError] = useState<string>('');
     const [testResultId, setTestResultId] = useState<number | null>(null);
     const [emailSent, setEmailSent] = useState(false);
     const formRef = useRef<HTMLFormElement>(null);
 
-    const startTest = (email: string) => {
-        setUserEmail(email);
+    const startTest = (userInfo: UserDemographics) => {
+        setUserData(userInfo);
         setShowInstructions(false);
     };
 
@@ -116,7 +117,7 @@ export default function TestPage() {
     };
 
     const sendResultEmail = async () => {
-        if (!userEmail || !testResultId) return;
+        if (!userData || !testResultId) return;
 
         try {
             setIsLoading(true);
@@ -127,7 +128,7 @@ export default function TestPage() {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    email: userEmail,
+                    email: userData.email,
                     resultId: testResultId
                 }),
             });
@@ -148,10 +149,10 @@ export default function TestPage() {
 
     // Enviar el correo automáticamente cuando tengamos el ID del resultado
     useEffect(() => {
-        if (testResultId && userEmail && !emailSent) {
+        if (testResultId && userData && !emailSent) {
             sendResultEmail();
         }
-    }, [testResultId, userEmail, emailSent]);
+    }, [testResultId, userData, emailSent]);
 
     const checkUnansweredQuestions = (questions: Question[]) => {
         const missingQuestions: number[] = [];
@@ -168,6 +169,11 @@ export default function TestPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setSubmitError('');
+
+        if (!userData) {
+            setSubmitError('Error: No se encontraron los datos del usuario');
+            return;
+        }
 
         // Verificar que todas las preguntas estén contestadas
         const missing = checkUnansweredQuestions(questions);
@@ -194,7 +200,11 @@ export default function TestPage() {
 
             // Crear objeto con todos los datos del test
             const testResult: TestResult = {
-                email: userEmail,
+                email: userData.email,
+                birthYear: userData.birthYear,
+                gender: userData.gender,
+                occupation: userData.occupation,
+                maritalStatus: userData.maritalStatus,
                 date: new Date().toISOString(),
                 answers: { ...answers },
                 categoryScores: {
@@ -241,7 +251,7 @@ export default function TestPage() {
         setUnansweredQuestions([]);
         setIsValidationVisible(false);
         setShowInstructions(true);
-        setUserEmail('');
+        setUserData(null);
         setSubmitError('');
         setTestResultId(null);
         setEmailSent(false);
@@ -250,49 +260,49 @@ export default function TestPage() {
     // Preparar las preguntas con sus categorías
     const questions: Question[] = [
         // Desenganchados (1-9)
-        { id: 1, text: "Hablo poco con mi mamá, porque no le interesan mis temas.", category: "desenganchados" },
-        { id: 2, text: "Prefiero estar tranquilo y que los de mi familia no me cuenten sus problemas o me pidan ayuda.", category: "desenganchados" },
-        { id: 3, text: "Es más cómodo y confortable vivir sólo que en pareja.", category: "desenganchados" },
-        { id: 4, text: "Cuidar a mis papás es el motivo por el que trabajo y me esfuerzo desde hace años.", category: "desenganchados" },
-        { id: 5, text: "Preferiría un trabajo donde no haya interacciones sociales, para mantenerme aislado de los demás.", category: "desenganchados" },
-        { id: 6, text: "Evito las actividades de participación en mi comunidad porque no tiene un impacto real.", category: "desenganchados" },
-        { id: 7, text: "Es una prioridad para mí ayudar a mi país, a mi estado, a mi municipio con mi esfuerzo y mi trabajo.", category: "desenganchados" },
-        { id: 8, text: "Tengo formas de recordar los cumpleaños y aniversarios de mis amigos.", category: "desenganchados" },
-        { id: 9, text: "Tendría que pedir consejo sobre mi vida profesional pero me falta urgencia para hacerlo.", category: "desenganchados" },
+        { id: 1, text: "Ayer iba a contarle algo a un familiar cercano y que quiero mucho, pero pensé que no le interesaría y mejor me quedé callado.", category: "desenganchados" },
+        { id: 2, text: "Cuando veo que alguien en casa está preocupado, me hago el ocupado para evitar que me cuenten o me pidan algo.", category: "desenganchados" },
+        { id: 3, text: "Disfruto mi espacio y evitar discusiones o adaptarme a alguien más me hace sentir más tranquilo.", category: "desenganchados" },
+        { id: 4, text: "He aprendido que cuidar a quienes me cuidaron es suficiente. No quiero más compromisos que me distraigan de eso ni complicarme más de lo necesario.", category: "desenganchados" },
+        { id: 5, text: "Busco trabajos donde pueda estar solo, sin tener que hablar mucho con otros; así me siento más cómodo y en paz.", category: "desenganchados" },
+        { id: 6, text: "Mi participación en la comunidad es irrelevante.", category: "desenganchados" },
+        { id: 7, text: "Las responsabilidades podrían limitar mi capacidad de aportar con libertad y enfoque a las necesidades de la sociedad.", category: "desenganchados" },
+        { id: 8, text: "Prefiero demostrar mi cariño a mis amigos de otras maneras más espontáneas, sin depender de fechas específicas.", category: "desenganchados" },
+        { id: 9, text: "Sé que debería pedir consejo sobre situaciones importantes, pero siempre lo pospongo porque no siento que sea urgente aún.", category: "desenganchados" },
 
         // Soñadores (10-18)
-        { id: 10, text: "Lo que espero de mis papás es que me apoyen económicamente sin que me exijan con pongan reglas.", category: "soñadores" },
-        { id: 11, text: "Estoy en las actividades familiares exclusivamente para que mis papás me sigan apoyando económicamente.", category: "soñadores" },
-        { id: 12, text: "Cuando mis amigos o amigas me contradicen los dejo de frecuentar.", category: "soñadores" },
-        { id: 13, text: "No creo que votar tenga un impacto real en la sociedad.", category: "soñadores" },
-        { id: 14, text: "Tengo hecha una lista de cuestiones que debe cumplir una persona con la que comienzo a salir antes de plantearme la posibilidad de enamorarme.", category: "soñadores" },
-        { id: 15, text: "Tengo ideas sobre mi futuro profesional pero no he tomado aún ninguna acción concreta.", category: "soñadores" },
-        { id: 16, text: "Necesito un trabajo en el que no haya horario fijo, ni objetivos específicos, para no estresarme.", category: "soñadores" },
-        { id: 17, text: "No tengo un plan concreto después de terminar mis estudios.", category: "soñadores" },
-        { id: 18, text: "Me gustaría que mi sueldo me diera para seguirme divirtiendo.", category: "soñadores" },
+        { id: 10, text: "Quisiera que en mi familia me apoyen incondicionalmente sin que me impongan reglas o me controlen.", category: "soñadores" },
+        { id: 11, text: "Asisto a reuniones familiares para cumplir.", category: "soñadores" },
+        { id: 12, text: "Cuando alguien de mi grupo no está de acuerdo conmigo, prefiero alejarme y dejar de hablar con esa persona.", category: "soñadores" },
+        { id: 13, text: "Prefiero involucrarme en acciones concretas y cotidianas para mejorar mi entorno, más que en mecanismos formales como votar.", category: "soñadores" },
+        { id: 14, text: "Antes de dejarme llevar por el amor, necesito sentir que esa persona encaja con lo que realmente valoro y busco.", category: "soñadores" },
+        { id: 15, text: "Sé que aún no tengo claro mi camino profesional, pero estoy tratando de entender qué me mueve y hacia dónde quiero ir.", category: "soñadores" },
+        { id: 16, text: "Busco un trabajo flexible, sin horarios estrictos ni metas rígidas, porque sé que el estrés me afecta mucho.", category: "soñadores" },
+        { id: 17, text: "Me doy cuenta de que necesito reflexionar más sobre lo que quiero para mi vida; atravieso etapa que me reta a conocerme mejor.", category: "soñadores" },
+        { id: 18, text: "Valoro el equilibrio entre el trabajo y el disfrute, por eso busco una forma de vivir donde pueda seguir divirtiéndome sin sentirme limitado económicamente.", category: "soñadores" },
 
         // Aficionados (19-27)
-        { id: 19, text: "Podría quedarme solter@ con tal de no equivocarme al elegir pareja.", category: "aficionados" },
-        { id: 20, text: "Tengo muchos conocidos, casi no tengo amigos.", category: "aficionados" },
-        { id: 21, text: "Tengo varios grupos de amigos con los que me comprometo a reunirme, al final termino viendo a muy pocos porque son demasiados.", category: "aficionados" },
-        { id: 22, text: "Me gusta explorar muchas áreas profesionales, pero no me comprometo a largo plazo con ninguna.", category: "aficionados" },
-        { id: 23, text: "Sufro cuando no tengo novi@, siento que todo lo demás se acomoda en función de la relación.", category: "aficionados" },
-        { id: 24, text: "Desde mi niñez siempre he tenido claro que quiero formar una familia.", category: "aficionados" },
-        { id: 25, text: "Haciendo cuentas tengo muchos modelos a seguir en mi vida profesional.", category: "aficionados" },
-        { id: 26, text: "Ya decidí qué quiero hacer profesionalmente y dedico tiempo específico a afinar mis planes profesionales.", category: "aficionados" },
-        { id: 27, text: "Procuro leer semanalmente sobre mis áreas de especialización.", category: "aficionados" },
+        { id: 19, text: "Valoro tanto la profundidad de una relación que no me interesa apresurarme; prefiero la soltería a una elección que no sea auténtica.", category: "aficionados" },
+        { id: 20, text: "A veces me doy cuenta de que, aunque tengo muchas conexiones, echo de menos vínculos más auténticos y profundos.", category: "aficionados" },
+        { id: 21, text: "Me doy cuenta de que me entusiasmo por pertenecer a varios círculos, pero esa misma dispersión me impide profundizar en algunos vínculos.", category: "aficionados" },
+        { id: 22, text: "He probado varias áreas profesionales porque me interesan muchas cosas, pero aún no encuentro una con la que comprometerme a largo plazo.", category: "aficionados" },
+        { id: 23, text: "Me cuesta estar sin pareja porque suelo organizar mi vida emocional y personal alrededor de la relación.", category: "aficionados" },
+        { id: 24, text: "Desde mi infancia, he sentido un llamado profundo a construir una familia; es un ideal que ha guiado muchas de mis decisiones.", category: "aficionados" },
+        { id: 25, text: "Me doy cuenta de que tengo muchas figuras que admiro, pero eso a veces me confunde más que aclararme el rumbo.", category: "aficionados" },
+        { id: 26, text: "Después de mucha reflexión, decidí qué quiero hacer profesionalmente y ahora me esfuerzo en pulir mis planes para lograrlo.", category: "aficionados" },
+        { id: 27, text: "Quisiera estar actualizado en las áreas que más me interesan para eso leo libros, veo videos, etc.", category: "aficionados" },
 
         // Comprometidos (28-37)
-        { id: 28, text: "Mis amigos y mis amigas son parte importante de mi felicidad: tengo una lista de amigos, y a cada uno le dedico un tiempo cada 2 o 3 meses.", category: "comprometidos" },
-        { id: 29, text: "Estoy convencido de la necesidad de la participación ciudadana, procuro ayudar en lo que me piden en mi municipio como voluntario.", category: "comprometidos" },
-        { id: 30, text: "Pertenezco a una asociación cívica y me siento muy comprometido a seguir ayudando.", category: "comprometidos" },
-        { id: 31, text: "Me interesa mucho la política y participo como voluntario en la campaña de quien me parece mejor candidato. Creo que es un modo de hacer una mejor ciudad y un mejor estado.", category: "comprometidos" },
-        { id: 32, text: "Para mí la amistad es un valor que está prácticamente encima de cualquier otro.", category: "comprometidos" },
-        { id: 33, text: "He pensado cuántos hijos tener, dónde quiero educarlos, pero entiendo que eso no puedo controlarlo. Por ejemplo, si mi esposa o esposo no puede tener hijos, o si tengo un hijo o hija con alguna condición.", category: "comprometidos" },
-        { id: 34, text: "He profundizado en la vida de dos o tres personas que considero modelos a seguir para poder elaborar mi plan profesional.", category: "comprometidos" },
-        { id: 35, text: "Tengo claras mis áreas de especialización desde que comencé la universidad.", category: "comprometidos" },
-        { id: 36, text: "Ya decidí cuáles serían los siguientes pasos que dar en mi vida profesional en los siguientes cinco años.", category: "comprometidos" },
-        { id: 37, text: "Tengo claro dónde podría trabajar y qué sueldo podría obtener con la preparación que tengo actualmente.", category: "comprometidos" }
+        { id: 28, text: "Valoro mucho a mis amigos y amigas, por eso mantengo una lista y trato de verlos o contactarlos cada 2 o 3 meses.", category: "comprometidos" },
+        { id: 29, text: "Participar en lo que necesita mi comunidad me conecta con algo más grande que yo. Ser voluntario me hace sentir útil y parte de algo que vale la pena.", category: "comprometidos" },
+        { id: 30, text: "Quiero estar involucrado en una causa que me importe de verdad. Más que una organización, sea una manera de vivir el compromiso con la sociedad.", category: "comprometidos" },
+        { id: 31, text: "Creo en la responsabilidad de contribuir activamente al bien común. Por eso, participo como voluntario en espacios donde puedo sumar a la construcción de una mejor sociedad.", category: "comprometidos" },
+        { id: 32, text: "He aprendido que la amistad, más que un valor, es una forma de vida que guía muchas de mis decisiones y prioridades.", category: "comprometidos" },
+        { id: 33, text: "He imaginado cómo quiero que sea mi familia, pero también estoy abierto(a) a lo que la vida traiga. Comprendo que no todo se puede controlar, y estoy dispuesto(a) a amar y adaptarme a lo que venga, sea cual sea la situación.", category: "comprometidos" },
+        { id: 34, text: "He estudiado con atención la vida de algunas personas que considero modelos a seguir. Me han ayudado a tener más claridad y a construir un plan con base sólida.", category: "comprometidos" },
+        { id: 35, text: "Mi vocación se definió desde el inicio de mis estudios universitarios; saber qué áreas me llaman me ha dado sentido y motivación para crecer.", category: "comprometidos" },
+        { id: 36, text: "Después de reflexionar, he trazado los pasos que quiero dar en mi carrera durante los siguientes cinco años y estoy listo(a) para trabajar en ellos.", category: "comprometidos" },
+        { id: 37, text: "Tengo una noción clara de las oportunidades laborales disponibles para mí y el rango salarial acorde a mi formación actual.", category: "comprometidos" }
     ];
 
     return (
@@ -307,7 +317,7 @@ export default function TestPage() {
                 <ResultsDisplay
                     results={results}
                     onReset={resetTest}
-                    email={userEmail}
+                    email={userData?.email || ''}
                     emailSent={emailSent}
                 />
             ) : (
