@@ -15,7 +15,7 @@
     "dotenv": "^16.5.0",
     "jsonwebtoken": "^9.0.2",
     "luxon": "^3.6.1",
-    "next": "^15.3.6",
+    "next": "^15.3.8",
     "nodemailer": "^7.0.3",
     "pg": "^8.16.0",
     "postcss": "^8.5.3",
@@ -33,7 +33,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "^15.3.6",
+    "eslint-config-next": "^15.3.8",
     "typescript": "^5"
   }
 }
