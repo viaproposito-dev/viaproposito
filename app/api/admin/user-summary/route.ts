@@ -73,10 +73,11 @@ export async function GET(request: NextRequest) {
             test_date: t.test_date,
             final_result: t.final_result,
             categoryScores: {
-                desenganchados: 0,
-                soñadores: 0,
-                aficionados: 0,
-                comprometidos: 0,
+                desorientado: 0,
+                rebelde: 0,
+                explorador: 0,
+                constructor: 0,
+                guia: 0,
                 ...Object.fromEntries(t.category_scores.map(cs => [cs.category_name, cs.score]))
             }
         }));

@@ -189,7 +189,7 @@ const InstructionsModal: React.FC<InstructionsModalProps> = ({ onStart }) => {
                     {/* Instrucciones */}
                     <div className="mb-4 sm:mb-6 text-via-primary/80 space-y-2 sm:space-y-3">
                         <p className="font-poppins leading-relaxed text-sm sm:text-base">
-                            A continuación encontrarás <strong className="text-via-primary">37 frases</strong> para evaluar qué tanto estás de acuerdo con cada una.
+                            A continuación encontrarás <strong className="text-via-primary">30 frases</strong> para evaluar qué tanto estás de acuerdo con cada una.
                         </p>
                         <p className="font-poppins leading-relaxed text-sm sm:text-base">
                             Por favor, completa la información solicitada y selecciona una opción para cada pregunta según tu nivel de acuerdo.
@@ -210,8 +210,8 @@ const InstructionsModal: React.FC<InstructionsModalProps> = ({ onStart }) => {
                                 onChange={handleEmailChange}
                                 onKeyDown={handleKeyDown}
                                 className={`w-full p-3 border-2 rounded-lg font-poppins text-base focus:ring-2 focus:outline-none transition-all duration-200 ${isValidEmail
-                                        ? 'border-via-sage focus:border-via-primary focus:ring-via-primary/20'
-                                        : 'border-red-400 focus:border-red-500 focus:ring-red-200'
+                                    ? 'border-via-sage focus:border-via-primary focus:ring-via-primary/20'
+                                    : 'border-red-400 focus:border-red-500 focus:ring-red-200'
                                     }`}
                                 placeholder="ejemplo@correo.com"
                                 disabled={isLoading}
@@ -319,8 +319,8 @@ const InstructionsModal: React.FC<InstructionsModalProps> = ({ onStart }) => {
                         onClick={handleSubmit}
                         disabled={isLoading}
                         className={`w-full mt-6 py-3 sm:py-4 font-poppins font-semibold text-sm sm:text-base rounded-lg transition-all duration-200 transform ${isLoading
-                                ? 'bg-via-sage/50 cursor-not-allowed text-via-primary/50'
-                                : 'bg-via-primary hover:bg-via-secondary text-white hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0'
+                            ? 'bg-via-sage/50 cursor-not-allowed text-via-primary/50'
+                            : 'bg-via-primary hover:bg-via-secondary text-white hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0'
                             }`}
                     >
                         {isLoading ? (

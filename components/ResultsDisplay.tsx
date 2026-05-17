@@ -20,54 +20,72 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
     const getCategoryData = (category: string): {
         title: string,
         description: string,
+        blogLink: string,
         icon: React.ReactNode,
         bgColor: string,
         borderColor: string
     } => {
         switch (category) {
-            case 'desenganchados':
+            case 'desorientado':
                 return {
-                    title: "Desenganchado",
-                    description: "Tu perfil muestra una tendencia a mantenerte distante de compromisos profundos. Prefieres la independencia y evitas situaciones que requieran involucramiento emocional o social intenso. Es posible que te sientas más cómodo manteniendo cierta distancia en tus relaciones personales y profesionales.",
+                    title: "Desorientado",
+                    description: "Estás en un punto donde te sientes perdido. No tienes claridad sobre qué quieres, pero tampoco sabes por dónde empezar, así que terminas viviendo más en duda que en dirección. Probablemente has pensado cosas como \"no sé qué estoy haciendo con mi vida\" o \"todos parecen tenerlo claro menos yo\", y cuando intentas pensar en tu futuro, te abruma tanto que prefieres evitarlo. En el fondo, no es falta de capacidad, es falta de claridad y una desconexión contigo mismo. Lo que necesitas ahora no es tomar decisiones grandes, es detenerte, bajar el ruido y empezar a entenderte.",
+                    blogLink: "https://www.viaproposito.com.mx/blog/que-quiero-hacer-con-mi-vida",
                     icon: (
                         <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                         </svg>
                     ),
                     bgColor: "bg-[#A3B7AD]",
                     borderColor: "border-[#A3B7AD]"
                 };
-            case 'soñadores':
+            case 'rebelde':
                 return {
-                    title: "Soñador",
-                    description: "Tu perfil refleja que tienes muchas ideas y aspiraciones, pero puede que te falte concreción en tus planes. Tiendes a imaginar escenarios ideales sin dar necesariamente los pasos prácticos para alcanzarlos. Tu creatividad es tu fortaleza, pero podrías beneficiarte de establecer metas más definidas.",
+                    title: "Rebelde",
+                    description: "Estás en un punto donde ya empezaste a cuestionarte y sabes que quieres algo diferente, pero sientes que hay algo que te detiene. No es falta de intención, es ruido interno. Probablemente has pensado \"sé que quiero cambiar, pero me da miedo equivocarme\" o \"siento que no soy suficiente o que voy tarde\", y eso hace que dudes de ti más de lo que avanzas. Lo que necesitas ahora es soltar lo que no te pertenece: cuestionar esas ideas que te limitan, separar lo que realmente quieres de lo que sientes que \"deberías\" hacer, y aceptar que equivocarse no es fallar, es parte del proceso.",
+                    blogLink: "https://www.viaproposito.com.mx/blog/como-confiar-mas-en-tus-decisiones",
                     icon: (
                         <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3m0 0V11" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                    ),
+                    bgColor: "bg-[#C4956A]",
+                    borderColor: "border-[#C4956A]"
+                };
+            case 'explorador':
+                return {
+                    title: "Explorador",
+                    description: "Estás en un punto donde ya saliste de la confusión y empezaste a descubrirte, pero ahora te enfrentas a algo diferente: tienes muchas ideas, intereses y posibilidades, pero no logras elegir una. Probablemente piensas \"me gustan muchas cosas, pero no sé cuál elegir\" o \"¿y si me equivoco?\", y eso te lleva a intentar de todo sin comprometerte realmente con nada. Lo que necesitas ahora no es seguir pensando, es empezar a elegir y probar en el mundo real. Porque la claridad no llega antes de actuar, llega gracias a actuar.",
+                    blogLink: "https://www.viaproposito.com.mx/blog/paralisis-de-decision",
+                    icon: (
+                        <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
                     ),
                     bgColor: "bg-[#96AC61]",
                     borderColor: "border-[#96AC61]"
                 };
-            case 'aficionados':
+            case 'constructor':
                 return {
-                    title: "Aficionado",
-                    description: "Tu perfil indica que exploras muchas áreas de interés sin comprometerte profundamente con ninguna. Disfrutas la variedad y las nuevas experiencias, pero puedes encontrar difícil persistir en un solo camino. Tu versatilidad es valiosa, aunque podrías conseguir más profundidad al enfocarte más.",
+                    title: "Constructor",
+                    description: "Estás en un punto donde ya tienes claridad suficiente sobre hacia dónde quieres ir y has empezado a tomar acción, pero sostener ese avance se ha vuelto el verdadero reto. Probablemente piensas \"ya sé lo que quiero, pero me cuesta mantenerme constante\" o \"quiero avanzar más rápido\". Lo que necesitas ahora es disciplina y ejecución: convertir tu intención en hábitos y tu visión en acciones medibles. Porque en esta etapa, la diferencia no la hace saber más, la hace hacer mejor y de forma consistente.",
+                    blogLink: "https://www.viaproposito.com.mx/blog/sabes-lo-que-quieres",
                     icon: (
                         <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                         </svg>
                     ),
                     bgColor: "bg-[#586E26]",
                     borderColor: "border-[#586E26]"
                 };
-            case 'comprometidos':
+            case 'guia':
                 return {
-                    title: "Comprometido",
-                    description: "Tu perfil demuestra un alto nivel de compromiso con tus relaciones, objetivos y comunidad. Tomas en serio tus responsabilidades y trabajas consistentemente hacia tus metas. Valoras la profundidad en tus conexiones y tienes una visión clara de lo que quieres lograr.",
+                    title: "Guía",
+                    description: "Estás en un punto donde el propósito ya no es solo algo que buscas: es algo que vives. Has construido claridad sobre quién eres, hacia dónde quieres ir y qué tipo de vida quieres crear, y has aprendido a sostenerlo con hábitos, decisiones y sistemas que te mantienen alineado incluso cuando las cosas se complican. Hoy no solo buscas crecer personalmente, también quieres generar impacto, compartir lo que has aprendido y ayudar a otros a encontrar claridad en su propio camino. Porque cuando llegas aquí, el propósito deja de ser solo personal y empieza a convertirse en una herramienta para servir e inspirar a otros.",
+                    blogLink: "",
                     icon: (
                         <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
                         </svg>
                     ),
                     bgColor: "bg-[#295244]",
@@ -77,6 +95,7 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
                 return {
                     title: "Resultado",
                     description: "Gracias por completar el test. A continuación se muestra tu perfil dominante.",
+                    blogLink: "",
                     icon: (
                         <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
@@ -89,23 +108,6 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
     };
 
     const categoryInfo = getCategoryData(winningCategory.category);
-
-    const getPersonalizedAdvice = (category: string): string => {
-        switch (category) {
-            case 'desenganchados':
-                return "Intenta encontrar un equilibrio entre tu independencia y el establecimiento de vínculos más profundos. Pequeños pasos como dedicar tiempo de calidad a tus relaciones más cercanas pueden marcar una gran diferencia.";
-            case 'soñadores':
-                return "Canaliza tu creatividad estableciendo metas concretas y alcanzables. Divide tus grandes sueños en pasos pequeños y medibles que puedas ir completando.";
-            case 'aficionados':
-                return "Identifica qué áreas te apasionan realmente y permite que algunas de ellas evolucionen hacia un compromiso más profundo. La especialización en algunas áreas no significa abandonar tu versatilidad.";
-            case 'comprometidos':
-                return "Tu compromiso es una fortaleza valiosa. Asegúrate de equilibrarlo con momentos de flexibilidad y descanso para evitar el agotamiento y seguir disfrutando de tus proyectos a largo plazo.";
-            default:
-                return "";
-        }
-    };
-
-    const advice = getPersonalizedAdvice(winningCategory.category);
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-via-cream py-8 px-4 sm:px-6">
@@ -152,15 +154,20 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
                                 </p>
                             </div>
 
-                            {/* Consejo personalizado */}
-                            {advice && (
+                            {/* Recurso recomendado */}
+                            {categoryInfo.blogLink && (
                                 <div className={`bg-via-cream/50 p-5 rounded-xl border-l-4 ${categoryInfo.borderColor}`}>
                                     <h3 className="font-poppins font-semibold text-via-primary text-lg mb-3">
-                                        Consejo personalizado:
+                                        Te podría interesar:
                                     </h3>
-                                    <p className="font-poppins text-via-primary/80 leading-relaxed">
-                                        {advice}
-                                    </p>
+                                    <a
+                                        href={categoryInfo.blogLink}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="font-poppins text-via-primary/80 underline underline-offset-2 hover:text-via-primary transition-colors leading-relaxed break-all"
+                                    >
+                                        {categoryInfo.blogLink}
+                                    </a>
                                 </div>
                             )}
 

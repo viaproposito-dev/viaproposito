@@ -94,43 +94,50 @@ const formatDemographicData = (userData: UserTestData) => {
   };
 };
 
-// Datos específicos para cada categoría con colores de Vía Propósito
+// Datos específicos para cada perfil con colores de Vía Propósito
 const getCategoryData = (category: string) => {
   switch (category) {
-    case 'desenganchados':
+    case 'desorientado':
       return {
-        title: 'Desenganchado',
+        title: 'Desorientado',
         color: '#A3B7AD',
-        description: 'Tu perfil muestra una tendencia a mantenerte distante de compromisos profundos. Prefieres la independencia y evitas situaciones que requieran involucramiento emocional o social intenso.',
-        advice: 'Intenta encontrar un equilibrio entre tu independencia y el establecimiento de vínculos más profundos. Pequeños pasos como dedicar tiempo de calidad a tus relaciones más cercanas pueden marcar una gran diferencia.'
+        description: 'Estás en un punto donde te sientes perdido. No tienes claridad sobre qué quieres, pero tampoco sabes por dónde empezar, así que terminas viviendo más en duda que en dirección. En el fondo, no es falta de capacidad, es falta de claridad y una desconexión contigo mismo. Lo que necesitas ahora no es tomar decisiones grandes, es detenerte, bajar el ruido y empezar a entenderte.',
+        blogLink: 'https://www.viaproposito.com.mx/blog/que-quiero-hacer-con-mi-vida'
       };
-    case 'soñadores':
+    case 'rebelde':
       return {
-        title: 'Soñador',
+        title: 'Rebelde',
+        color: '#C4956A',
+        description: 'Estás en un punto donde ya empezaste a cuestionarte y sabes que quieres algo diferente, pero sientes que hay algo que te detiene. No es falta de intención, es ruido interno. Lo que necesitas ahora es soltar lo que no te pertenece: cuestionar esas ideas que te limitan y aceptar que equivocarse no es fallar, es parte del proceso.',
+        blogLink: 'https://www.viaproposito.com.mx/blog/como-confiar-mas-en-tus-decisiones'
+      };
+    case 'explorador':
+      return {
+        title: 'Explorador',
         color: '#96AC61',
-        description: 'Tu perfil refleja que tienes muchas ideas y aspiraciones, pero puede que te falte concreción en tus planes. Tiendes a imaginar escenarios ideales sin dar necesariamente los pasos prácticos para alcanzarlos.',
-        advice: 'Canaliza tu creatividad estableciendo metas concretas y alcanzables. Divide tus grandes sueños en pasos pequeños y medibles que puedas ir completando.'
+        description: 'Estás en un punto donde ya saliste de la confusión y empezaste a descubrirte, pero ahora te enfrentas a algo diferente: tienes muchas ideas, intereses y posibilidades, pero no logras elegir una. Lo que necesitas ahora no es seguir pensando, es empezar a elegir y probar en el mundo real. Porque la claridad no llega antes de actuar, llega gracias a actuar.',
+        blogLink: 'https://www.viaproposito.com.mx/blog/paralisis-de-decision'
       };
-    case 'aficionados':
+    case 'constructor':
       return {
-        title: 'Aficionado',
+        title: 'Constructor',
         color: '#586E26',
-        description: 'Tu perfil indica que exploras muchas áreas de interés sin comprometerte profundamente con ninguna. Disfrutas la variedad y las nuevas experiencias, pero puedes encontrar difícil persistir en un solo camino.',
-        advice: 'Identifica qué áreas te apasionan realmente y permite que algunas de ellas evolucionen hacia un compromiso más profundo. La especialización en algunas áreas no significa abandonar tu versatilidad.'
+        description: 'Estás en un punto donde ya tienes claridad suficiente sobre hacia dónde quieres ir y has empezado a tomar acción, pero sostener ese avance se ha vuelto el verdadero reto. Lo que necesitas ahora es disciplina y ejecución: convertir tu intención en hábitos y tu visión en acciones medibles.',
+        blogLink: 'https://www.viaproposito.com.mx/blog/sabes-lo-que-quieres'
       };
-    case 'comprometidos':
+    case 'guia':
       return {
-        title: 'Comprometido',
+        title: 'Guía',
         color: '#295244',
-        description: 'Tu perfil demuestra un alto nivel de compromiso con tus relaciones, objetivos y comunidad. Tomas en serio tus responsabilidades y trabajas consistentemente hacia tus metas.',
-        advice: 'Tu compromiso es una fortaleza valiosa. Asegúrate de equilibrarlo con momentos de flexibilidad y descanso para evitar el agotamiento y seguir disfrutando de tus proyectos a largo plazo.'
+        description: 'Estás en un punto donde el propósito ya no es solo algo que buscas: es algo que vives. Has construido claridad sobre quién eres, hacia dónde quieres ir y qué tipo de vida quieres crear. Hoy no solo buscas crecer personalmente, también quieres generar impacto y ayudar a otros a encontrar claridad en su propio camino.',
+        blogLink: ''
       };
     default:
       return {
         title: 'Resultado',
         color: '#295244',
         description: 'Gracias por completar el test.',
-        advice: ''
+        blogLink: ''
       };
   }
 };
@@ -488,13 +495,14 @@ const createEmailTemplate = (result: CategoryResult, userData?: UserTestData) =>
         <div class="content" style="background-color: white !important;">
           <div class="section" style="background-color: white !important;">
             <h2 style="color: #295244 !important;">Tu Resultado Personal</h2>
-            <p style="color: #295244 !important;">${categoryData.description} Es posible que te sientas más cómodo con este enfoque, pero también hay oportunidades para el crecimiento personal explorando otros estilos.</p>
+            <p style="color: #295244 !important;">${categoryData.description}</p>
           </div>
-          
+
+          ${categoryData.blogLink ? `
           <div class="advice-box" style="background: linear-gradient(135deg, #FFFBEF 0%, #F8F5E9 100%) !important;">
-            <h3 style="color: #295244 !important;">Consejo personalizado:</h3>
-            <p style="color: #295244 !important;">${categoryData.advice}</p>
-          </div>
+            <h3 style="color: #295244 !important;">Te podría interesar:</h3>
+            <p style="color: #295244 !important;"><a href="${categoryData.blogLink}" style="color: ${categoryData.color} !important;">${categoryData.blogLink}</a></p>
+          </div>` : ''}
           
           <div class="divider"></div>
           
@@ -560,7 +568,7 @@ export async function sendResultEmail(email: string, result: CategoryResult, use
       from: process.env.EMAIL_FROM,
       to: email,
       subject: `Tu Perfil: ${categoryData.title} - Vía Propósito`,
-      text: `Has completado el test de Vía Propósito. Tu perfil es: ${categoryData.title}. ${categoryData.description} ${categoryData.advice}`,
+      text: `Has completado el test de Vía Propósito. Tu perfil es: ${categoryData.title}. ${categoryData.description}${categoryData.blogLink ? ` Te podría interesar: ${categoryData.blogLink}` : ''}`,
       html: htmlContent,
     };
 

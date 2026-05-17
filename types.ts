@@ -20,10 +20,11 @@ export interface TestResult {
     date: string;
     answers: Record<number, number>;
     categoryScores: {
-        desenganchados: number;
-        soñadores: number;
-        aficionados: number;
-        comprometidos: number;
+        desorientado: number;
+        rebelde: number;
+        explorador: number;
+        constructor: number;
+        guia: number;
     };
     result: string;
 }

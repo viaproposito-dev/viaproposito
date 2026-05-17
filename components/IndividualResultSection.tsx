@@ -12,10 +12,11 @@ interface UserTest {
     test_date: string;
     final_result: string;
     categoryScores: {
-        desenganchados: number;
-        soñadores: number;
-        aficionados: number;
-        comprometidos: number;
+        desorientado: number;
+        rebelde: number;
+        explorador: number;
+        constructor: number;
+        guia: number;
     };
 }
 
@@ -156,20 +157,22 @@ export default function IndividualResultSection({ getSessionToken }: IndividualR
 
     const getCategoryName = (category: string): string => {
         const categoryMap: Record<string, string> = {
-            'desenganchados': 'Desenganchados',
-            'soñadores': 'Soñadores',
-            'aficionados': 'Aficionados',
-            'comprometidos': 'Comprometidos'
+            'desorientado': 'Desorientado',
+            'rebelde': 'Rebelde',
+            'explorador': 'Explorador',
+            'constructor': 'Constructor',
+            'guia': 'Guía'
         };
         return categoryMap[category] || category;
     };
 
     const getCategoryColor = (category: string): string => {
         const colorMap: Record<string, string> = {
-            'desenganchados': 'bg-[#A3B7AD]',
-            'soñadores': 'bg-[#96AC61]',
-            'aficionados': 'bg-[#586E26]',
-            'comprometidos': 'bg-[#295244]'
+            'desorientado': 'bg-[#A3B7AD]',
+            'rebelde': 'bg-[#C4956A]',
+            'explorador': 'bg-[#96AC61]',
+            'constructor': 'bg-[#586E26]',
+            'guia': 'bg-[#295244]'
         };
         return colorMap[category] || 'bg-via-sage';
     };
@@ -190,29 +193,11 @@ export default function IndividualResultSection({ getSessionToken }: IndividualR
         });
     };
 
-    const getScorePercentage = (score: number, category: string): number => {
-        // Different max scores per category based on number of questions
-        const maxScores = {
-            'desenganchados': 36, // 9 questions * 4 points max
-            'soñadores': 36,      // 9 questions * 4 points max
-            'aficionados': 36,    // 9 questions * 4 points max
-            'comprometidos': 40   // 10 questions * 4 points max
-        };
-
-        const maxScore = maxScores[category as keyof typeof maxScores] || 36;
-        return Math.round((score / maxScore) * 100);
+    const getScorePercentage = (score: number): number => {
+        return Math.round((score / 24) * 100);
     };
 
-    const getMaxScore = (category: string): number => {
-        const maxScores = {
-            'desenganchados': 36, // 9 questions * 4 points max
-            'soñadores': 36,      // 9 questions * 4 points max
-            'aficionados': 36,    // 9 questions * 4 points max
-            'comprometidos': 40   // 10 questions * 4 points max
-        };
-
-        return maxScores[category as keyof typeof maxScores] || 36;
-    };
+    const getMaxScore = (): number => 24;
 
     return (
         <div className="space-y-8">
@@ -417,8 +402,8 @@ export default function IndividualResultSection({ getSessionToken }: IndividualR
                                             <h6 className="font-poppins font-medium text-via-primary/80">Puntajes por Categoría:</h6>
 
                                             {Object.entries(test.categoryScores).map(([category, score]) => {
-                                                const percentage = getScorePercentage(score, category);
-                                                const maxScore = getMaxScore(category);
+                                                const percentage = getScorePercentage(score);
+                                                const maxScore = getMaxScore();
                                                 const categoryColor = getCategoryColor(category);
 
                                                 return (

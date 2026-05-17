@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
         const winningCategory = {
             category: testResult.final_result,
             score: testResult.category_scores.find(cs => cs.category_name === testResult.final_result)?.score || 0,
-            order: ['desenganchados', 'soñadores', 'aficionados', 'comprometidos'].indexOf(testResult.final_result) + 1
+            order: ['desorientado', 'rebelde', 'explorador', 'constructor', 'guia'].indexOf(testResult.final_result) + 1
         };
 
         const userData = {

@@ -86,20 +86,22 @@ export default function UsersSection({ getSessionToken }: UsersSectionProps) {
 
     const getCategoryName = (category: string): string => {
         const categoryMap: Record<string, string> = {
-            'desenganchados': 'Desenganchados',
-            'soñadores': 'Soñadores',
-            'aficionados': 'Aficionados',
-            'comprometidos': 'Comprometidos'
+            'desorientado': 'Desorientado',
+            'rebelde': 'Rebelde',
+            'explorador': 'Explorador',
+            'constructor': 'Constructor',
+            'guia': 'Guía'
         };
         return categoryMap[category] || category;
     };
 
     const getCategoryColor = (category: string): string => {
         const colorMap: Record<string, string> = {
-            'desenganchados': 'bg-[#A3B7AD]',
-            'soñadores': 'bg-[#96AC61]',
-            'aficionados': 'bg-[#586E26]',
-            'comprometidos': 'bg-[#295244]'
+            'desorientado': 'bg-[#A3B7AD]',
+            'rebelde': 'bg-[#C4956A]',
+            'explorador': 'bg-[#96AC61]',
+            'constructor': 'bg-[#586E26]',
+            'guia': 'bg-[#295244]'
         };
         return colorMap[category] || 'bg-via-sage';
     };

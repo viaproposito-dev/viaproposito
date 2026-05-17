@@ -63,20 +63,22 @@ export default function StatsOverview({ categoryDistribution, totalTests, demogr
 
     const getCategoryName = (category: string): string => {
         const categoryMap: Record<string, string> = {
-            'desenganchados': 'Desenganchados',
-            'soñadores': 'Soñadores',
-            'aficionados': 'Aficionados',
-            'comprometidos': 'Comprometidos'
+            'desorientado': 'Desorientado',
+            'rebelde': 'Rebelde',
+            'explorador': 'Explorador',
+            'constructor': 'Constructor',
+            'guia': 'Guía'
         };
         return categoryMap[category] || category;
     };
 
     const getCategoryColor = (category: string): string => {
         const colorMap: Record<string, string> = {
-            'desenganchados': 'bg-[#A3B7AD]',
-            'soñadores': 'bg-[#96AC61]',
-            'aficionados': 'bg-[#586E26]',
-            'comprometidos': 'bg-[#295244]'
+            'desorientado': 'bg-[#A3B7AD]',
+            'rebelde': 'bg-[#C4956A]',
+            'explorador': 'bg-[#96AC61]',
+            'constructor': 'bg-[#586E26]',
+            'guia': 'bg-[#295244]'
         };
         return colorMap[category] || 'bg-via-sage';
     };
@@ -131,7 +133,7 @@ export default function StatsOverview({ categoryDistribution, totalTests, demogr
                     Distribución por Categoría de Resultado
                 </h2>
                 <div className="space-y-6">
-                    {['comprometidos', 'aficionados', 'soñadores', 'desenganchados'].map((categoryKey) => {
+                    {['guia', 'constructor', 'explorador', 'rebelde', 'desorientado'].map((categoryKey) => {
                         const categoryData = categoryDistribution.find(c => c.category === categoryKey) || { category: categoryKey, count: 0 };
                         const percentage = totalTests > 0 ? (categoryData.count / totalTests) * 100 : 0;
                         const categoryColor = getCategoryColor(categoryKey);
