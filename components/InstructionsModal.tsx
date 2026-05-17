@@ -15,6 +15,8 @@ const InstructionsModal: React.FC<InstructionsModalProps> = ({ onStart }) => {
     const [maritalStatus, setMaritalStatus] = useState('');
     const [isValidEmail, setIsValidEmail] = useState(true);
     const [isLoading, setIsLoading] = useState(false);
+    const [isLookingUp, setIsLookingUp] = useState(false);
+    const [autoFilled, setAutoFilled] = useState(false);
     const [error, setError] = useState('');
     const [formSubmitted, setFormSubmitted] = useState(false);
 
@@ -75,6 +77,7 @@ const InstructionsModal: React.FC<InstructionsModalProps> = ({ onStart }) => {
     const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
         setEmail(value);
+        setAutoFilled(false);
 
         if (value.length > 0 || formSubmitted) {
             setIsValidEmail(validateEmail(value));
@@ -83,6 +86,29 @@ const InstructionsModal: React.FC<InstructionsModalProps> = ({ onStart }) => {
             }
         } else {
             setIsValidEmail(true);
+        }
+    };
+
+    const handleEmailBlur = async () => {
+        if (!validateEmail(email)) return;
+
+        setIsLookingUp(true);
+        try {
+            const res = await fetch(`/api/user-lookup?email=${encodeURIComponent(email)}`);
+            const data = await res.json();
+
+            if (data.found && data.demographics) {
+                const { birthYear, gender, occupation, maritalStatus } = data.demographics;
+                if (birthYear) setBirthYear(String(birthYear));
+                if (gender) setGender(gender);
+                if (occupation) setOccupation(occupation);
+                if (maritalStatus) setMaritalStatus(maritalStatus);
+                setAutoFilled(true);
+            }
+        } catch {
+            // silent — lookup failure should not block the user
+        } finally {
+            setIsLookingUp(false);
         }
     };
 
@@ -203,20 +229,39 @@ const InstructionsModal: React.FC<InstructionsModalProps> = ({ onStart }) => {
                             <label htmlFor="email" className="block text-sm font-poppins font-semibold text-via-primary mb-2">
                                 Correo electrónico *
                             </label>
-                            <input
-                                type="email"
-                                id="email"
-                                value={email}
-                                onChange={handleEmailChange}
-                                onKeyDown={handleKeyDown}
-                                className={`w-full p-3 border-2 rounded-lg font-poppins text-base focus:ring-2 focus:outline-none transition-all duration-200 ${isValidEmail
-                                    ? 'border-via-sage focus:border-via-primary focus:ring-via-primary/20'
-                                    : 'border-red-400 focus:border-red-500 focus:ring-red-200'
-                                    }`}
-                                placeholder="ejemplo@correo.com"
-                                disabled={isLoading}
-                                style={{ fontSize: '16px' }}
-                            />
+                            <div className="relative">
+                                <input
+                                    type="email"
+                                    id="email"
+                                    value={email}
+                                    onChange={handleEmailChange}
+                                    onBlur={handleEmailBlur}
+                                    onKeyDown={handleKeyDown}
+                                    className={`w-full p-3 border-2 rounded-lg font-poppins text-base focus:ring-2 focus:outline-none transition-all duration-200 ${isValidEmail
+                                        ? 'border-via-sage focus:border-via-primary focus:ring-via-primary/20'
+                                        : 'border-red-400 focus:border-red-500 focus:ring-red-200'
+                                        }`}
+                                    placeholder="ejemplo@correo.com"
+                                    disabled={isLoading}
+                                    style={{ fontSize: '16px' }}
+                                />
+                                {isLookingUp && (
+                                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                                        <svg className="animate-spin h-4 w-4 text-via-primary/40" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                    </div>
+                                )}
+                            </div>
+                            {autoFilled && (
+                                <p className="mt-1.5 text-xs font-poppins text-via-primary/60 flex items-center gap-1">
+                                    <svg className="h-3 w-3 text-via-primary/50 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                    </svg>
+                                    Datos anteriores cargados. Puedes modificarlos si es necesario.
+                                </p>
+                            )}
                         </div>
 
                         {/* Año de nacimiento */}
