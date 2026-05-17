@@ -1,0 +1,46 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model answers {
+  id             Int          @id @default(autoincrement())
+  test_result_id Int
+  question_id    Int
+  answer_value   Int
+  test_results   test_results @relation(fields: [test_result_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([test_result_id, question_id])
+  @@index([test_result_id], map: "idx_answers_test_result_id")
+}
+
+model category_scores {
+  id             Int          @id @default(autoincrement())
+  test_result_id Int
+  category_name  String       @db.VarChar(50)
+  score          Int
+  test_results   test_results @relation(fields: [test_result_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([test_result_id, category_name])
+  @@index([test_result_id], map: "idx_category_scores_test_result_id")
+}
+
+model test_results {
+  id              Int               @id @default(autoincrement())
+  email           String            @db.VarChar(255)
+  test_date       DateTime          @default(now()) @db.Timestamp(6)
+  final_result    String            @db.VarChar(50)
+  birth_year      Int?
+  gender          String?           @db.VarChar(10)
+  occupation      String?           @db.VarChar(100)
+  marital_status  String?           @db.VarChar(20)
+  answers         answers[]
+  category_scores category_scores[]
+
+  @@index([email], map: "idx_test_results_email")
+  @@index([test_date], map: "idx_test_results_test_date")
+}
