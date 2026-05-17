@@ -1,10 +1,8 @@
-// app/api/admin/basic-stats/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { query } from '@/lib/db';
+import { prisma } from '@/lib/prisma';
 import jwt from 'jsonwebtoken';
 
 export async function GET(request: NextRequest) {
-    // Verificar JWT token
     const authHeader = request.headers.get('Authorization') || '';
     const token = authHeader.replace('Bearer ', '');
     const jwtSecret = process.env.JWT_SECRET || 'via-proposito-jwt-secret-key';
@@ -20,48 +18,39 @@ export async function GET(request: NextRequest) {
     }
 
     try {
-        // Obtener estadísticas básicas
-        const totalTestsResult = await query(
-            'SELECT COUNT(*) AS total FROM test_results'
-        );
+        const [totalTests, uniqueEmails] = await prisma.$transaction([
+            prisma.test_results.count(),
+            prisma.test_results.findMany({ distinct: ['email'], select: { email: true } })
+        ]);
+        const totalUsers = uniqueEmails.length;
 
-        const totalUsersResult = await query(
-            'SELECT COUNT(DISTINCT email) AS total FROM test_results'
-        );
-
-        // Obtener distribución por categoría
-        const categoryDistributionResult = await query(`
-            SELECT final_result AS category, COUNT(*) AS count 
-            FROM test_results 
-            GROUP BY final_result 
+        const categoryDistribution = await prisma.$queryRaw<Array<{ category: string; count: number }>>`
+            SELECT final_result AS category, COUNT(*)::int AS count
+            FROM test_results
+            GROUP BY final_result
             ORDER BY count DESC
-        `);
+        `;
 
-        // Obtener distribución demográfica
-        // Distribución por género
-        const genderDistributionResult = await query(`
-            SELECT 
-                CASE 
+        const genderDistribution = await prisma.$queryRaw<Array<{ gender: string; count: number }>>`
+            SELECT
+                CASE
                     WHEN gender = 'masculino' THEN 'Masculino'
                     WHEN gender = 'femenino' THEN 'Femenino'
                     WHEN gender = 'otro' THEN 'Otro'
                     ELSE 'No especificado'
                 END as gender,
-                COUNT(*) as count
-            FROM test_results 
+                COUNT(*)::int as count
+            FROM test_results
             WHERE gender IS NOT NULL
-            GROUP BY gender 
+            GROUP BY gender
             ORDER BY count DESC
-        `);
+        `;
 
-        // Distribución por grupos de edad
-        const ageDistributionResult = await query(`
-            SELECT 
-                age_group,
-                COUNT(*) as count
+        const ageDistribution = await prisma.$queryRaw<Array<{ age_group: string; count: number }>>`
+            SELECT age_group, COUNT(*)::int as count
             FROM (
-                SELECT 
-                    CASE 
+                SELECT
+                    CASE
                         WHEN EXTRACT(YEAR FROM CURRENT_DATE) - birth_year < 13 THEN 'Menor de 13 años'
                         WHEN EXTRACT(YEAR FROM CURRENT_DATE) - birth_year BETWEEN 13 AND 17 THEN '13-17 años'
                         WHEN EXTRACT(YEAR FROM CURRENT_DATE) - birth_year BETWEEN 18 AND 25 THEN '18-25 años'
@@ -71,11 +60,11 @@ export async function GET(request: NextRequest) {
                         WHEN EXTRACT(YEAR FROM CURRENT_DATE) - birth_year > 55 THEN '56+ años'
                         ELSE 'No especificado'
                     END as age_group
-                FROM test_results 
+                FROM test_results
                 WHERE birth_year IS NOT NULL
             ) as age_data
-            GROUP BY age_group 
-            ORDER BY 
+            GROUP BY age_group
+            ORDER BY
                 CASE age_group
                     WHEN 'Menor de 13 años' THEN 1
                     WHEN '13-17 años' THEN 2
@@ -86,12 +75,11 @@ export async function GET(request: NextRequest) {
                     WHEN '56+ años' THEN 7
                     ELSE 8
                 END
-        `);
+        `;
 
-        // Top 5 ocupaciones más comunes
-        const occupationDistributionResult = await query(`
-            SELECT 
-                CASE 
+        const occupationDistribution = await prisma.$queryRaw<Array<{ occupation: string; count: number }>>`
+            SELECT
+                CASE
                     WHEN occupation = 'estudiante' THEN 'Estudiante'
                     WHEN occupation = 'medico' THEN 'Médico'
                     WHEN occupation = 'ingeniero' THEN 'Ingeniero'
@@ -117,18 +105,17 @@ export async function GET(request: NextRequest) {
                     WHEN occupation = 'otro' THEN 'Otro'
                     ELSE 'No especificado'
                 END as occupation,
-                COUNT(*) as count
-            FROM test_results 
+                COUNT(*)::int as count
+            FROM test_results
             WHERE occupation IS NOT NULL
-            GROUP BY occupation 
+            GROUP BY occupation
             ORDER BY count DESC
             LIMIT 10
-        `);
+        `;
 
-        // Distribución por estado civil
-        const maritalStatusDistributionResult = await query(`
-            SELECT 
-                CASE 
+        const maritalStatusDistribution = await prisma.$queryRaw<Array<{ marital_status: string; count: number }>>`
+            SELECT
+                CASE
                     WHEN marital_status = 'soltero' THEN 'Soltero/a'
                     WHEN marital_status = 'casado' THEN 'Casado/a'
                     WHEN marital_status = 'union_libre' THEN 'Unión Libre'
@@ -137,22 +124,22 @@ export async function GET(request: NextRequest) {
                     WHEN marital_status = 'separado' THEN 'Separado/a'
                     ELSE 'No especificado'
                 END as marital_status,
-                COUNT(*) as count
-            FROM test_results 
+                COUNT(*)::int as count
+            FROM test_results
             WHERE marital_status IS NOT NULL
-            GROUP BY marital_status 
+            GROUP BY marital_status
             ORDER BY count DESC
-        `);
+        `;
 
         return NextResponse.json({
-            totalTests: parseInt(totalTestsResult.rows[0].total),
-            totalUsers: parseInt(totalUsersResult.rows[0].total),
-            categoryDistribution: categoryDistributionResult.rows,
+            totalTests,
+            totalUsers,
+            categoryDistribution,
             demographics: {
-                gender: genderDistributionResult.rows,
-                ageGroups: ageDistributionResult.rows,
-                occupations: occupationDistributionResult.rows,
-                maritalStatus: maritalStatusDistributionResult.rows
+                gender: genderDistribution,
+                ageGroups: ageDistribution,
+                occupations: occupationDistribution,
+                maritalStatus: maritalStatusDistribution
             }
         });
     } catch (error) {

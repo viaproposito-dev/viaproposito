@@ -1,10 +1,8 @@
-// app/api/admin/tests-by-day/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { query } from '@/lib/db';
+import { prisma } from '@/lib/prisma';
 import jwt from 'jsonwebtoken';
 
 export async function GET(request: NextRequest) {
-    // Verificar JWT token
     const authHeader = request.headers.get('Authorization') || '';
     const token = authHeader.replace('Bearer ', '');
     const jwtSecret = process.env.JWT_SECRET || 'via-proposito-jwt-secret-key';
@@ -20,20 +18,15 @@ export async function GET(request: NextRequest) {
     }
 
     try {
-        // Obtener tests por día (últimos 30 días)
-        const testsByDayResult = await query(`
-            SELECT 
-                DATE(test_date) AS date, 
-                COUNT(*) AS count 
-            FROM test_results 
-            WHERE test_date > NOW() - INTERVAL '30 days' 
-            GROUP BY DATE(test_date) 
+        const testsByDay = await prisma.$queryRaw<Array<{ date: Date; count: number }>>`
+            SELECT DATE(test_date) AS date, COUNT(*)::int AS count
+            FROM test_results
+            WHERE test_date > NOW() - INTERVAL '30 days'
+            GROUP BY DATE(test_date)
             ORDER BY date DESC
-        `);
+        `;
 
-        return NextResponse.json({
-            testsByDay: testsByDayResult.rows
-        });
+        return NextResponse.json({ testsByDay });
     } catch (error) {
         console.error('Error obteniendo tests por día:', error);
         return NextResponse.json(

@@ -1,10 +1,8 @@
-// app/api/admin/user-summary/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { query } from '@/lib/db';
+import { prisma } from '@/lib/prisma';
 import jwt from 'jsonwebtoken';
 
 export async function GET(request: NextRequest) {
-    // Verificar JWT token
     const authHeader = request.headers.get('Authorization') || '';
     const token = authHeader.replace('Bearer ', '');
     const jwtSecret = process.env.JWT_SECRET || 'via-proposito-jwt-secret-key';
@@ -20,7 +18,6 @@ export async function GET(request: NextRequest) {
     }
 
     try {
-        // Obtener email de los parámetros
         const { searchParams } = new URL(request.url);
         const email = searchParams.get('email');
 
@@ -31,95 +28,62 @@ export async function GET(request: NextRequest) {
             );
         }
 
-        // Verificar si el usuario existe
-        const userExistsResult = await query(
-            'SELECT COUNT(*) AS count FROM test_results WHERE email = $1',
-            [email]
-        );
+        const testCount = await prisma.test_results.count({ where: { email } });
 
-        if (parseInt(userExistsResult.rows[0].count) === 0) {
+        if (testCount === 0) {
             return NextResponse.json(
                 { error: 'Usuario no encontrado' },
                 { status: 404 }
             );
         }
 
-        // Obtener resumen del usuario con información demográfica del test más reciente
-        const userStatsResult = await query(`
-            SELECT 
-                COUNT(*) AS total_tests,
-                MIN(test_date) AS first_test,
-                MAX(test_date) AS last_test
-            FROM test_results 
-            WHERE email = $1
-        `, [email]);
+        const [userStats] = await prisma.$queryRaw<Array<{ total_tests: number; first_test: Date; last_test: Date }>>`
+            SELECT COUNT(*)::int AS total_tests, MIN(test_date) AS first_test, MAX(test_date) AS last_test
+            FROM test_results
+            WHERE email = ${email}
+        `;
 
-        // Obtener información demográfica más reciente
-        const userDemographicsResult = await query(`
-            SELECT 
-                birth_year,
-                gender,
-                occupation,
-                marital_status,
-                test_date
-            FROM test_results 
-            WHERE email = $1 
-            ORDER BY test_date DESC 
-            LIMIT 1
-        `, [email]);
+        const demographics = await prisma.test_results.findFirst({
+            where: { email },
+            orderBy: { test_date: 'desc' },
+            select: { birth_year: true, gender: true, occupation: true, marital_status: true, test_date: true }
+        });
 
-        // Obtener todos los tests del usuario con sus puntajes
-        const userTestsResult = await query(`
-            SELECT 
-                tr.id,
-                tr.birth_year,
-                tr.gender,
-                tr.occupation,
-                tr.marital_status,
-                tr.test_date AT TIME ZONE 'UTC' as test_date,
-                tr.final_result,
-                cs.category_name,
-                cs.score
-            FROM test_results tr
-            LEFT JOIN category_scores cs ON tr.id = cs.test_result_id
-            WHERE tr.email = $1
-            ORDER BY tr.test_date DESC
-        `, [email]);
-
-        // Estructurar los datos por test
-        const testsMap = new Map();
-
-        userTestsResult.rows.forEach(row => {
-            if (!testsMap.has(row.id)) {
-                testsMap.set(row.id, {
-                    id: row.id,
-                    birth_year: row.birth_year,
-                    gender: row.gender,
-                    occupation: row.occupation,
-                    marital_status: row.marital_status,
-                    test_date: row.test_date,
-                    final_result: row.final_result,
-                    categoryScores: {
-                        desenganchados: 0,
-                        soñadores: 0,
-                        aficionados: 0,
-                        comprometidos: 0
-                    }
-                });
-            }
-
-            if (row.category_name && row.score !== null) {
-                testsMap.get(row.id).categoryScores[row.category_name] = row.score;
+        const rawTests = await prisma.test_results.findMany({
+            where: { email },
+            orderBy: { test_date: 'desc' },
+            select: {
+                id: true,
+                birth_year: true,
+                gender: true,
+                occupation: true,
+                marital_status: true,
+                test_date: true,
+                final_result: true,
+                category_scores: { select: { category_name: true, score: true } }
             }
         });
 
-        const tests = Array.from(testsMap.values());
-        const userStats = userStatsResult.rows[0];
-        const demographics = userDemographicsResult.rows[0];
+        const tests = rawTests.map(t => ({
+            id: t.id,
+            birth_year: t.birth_year,
+            gender: t.gender,
+            occupation: t.occupation,
+            marital_status: t.marital_status,
+            test_date: t.test_date,
+            final_result: t.final_result,
+            categoryScores: {
+                desenganchados: 0,
+                soñadores: 0,
+                aficionados: 0,
+                comprometidos: 0,
+                ...Object.fromEntries(t.category_scores.map(cs => [cs.category_name, cs.score]))
+            }
+        }));
 
         return NextResponse.json({
             email,
-            totalTests: parseInt(userStats.total_tests),
+            totalTests: userStats.total_tests,
             firstTest: userStats.first_test,
             lastTest: userStats.last_test,
             demographics: demographics ? {
